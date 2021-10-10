@@ -1,8 +1,8 @@
 package server
 
 import (
+	"elp-go/shared"
 	"fmt"
-	"io"
 	"log"
 	"net"
 )
@@ -20,10 +20,10 @@ func Start(port int) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		go func() int {
-			io.WriteString(client, "Hello there\n")
-			client.Close()
-			return 0
+		go func() {
+			remote := shared.NewRemote(client)
+			remote.Send("Hello there !\n")
+			remote.Close()
 		}()
 	}
 }

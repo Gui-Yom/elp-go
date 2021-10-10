@@ -1,25 +1,24 @@
 package client
 
 import (
-	"bufio"
 	_map "elp-go/map"
+	"elp-go/shared"
 	"fmt"
 	"log"
 	"net"
 )
 
 // Start Main func when running a client
-func Start(remote string, port int) {
+func Start(addr string, port int) {
 
-	client, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: net.ParseIP(remote), Port: port})
+	client, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: net.ParseIP(addr), Port: port})
 	if err != nil {
 		log.Fatal(err)
 	}
-	data, err := bufio.NewReader(client).ReadString('\n')
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("received : %v\n", data)
+	remote := shared.NewRemote(client)
+	var str string
+	remote.Recv(&str)
+	fmt.Printf("received : %v", str)
 
 	carte := _map.ReadMap("map.txt")
 	ligne, colonne := carte.Size()
