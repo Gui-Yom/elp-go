@@ -6,14 +6,17 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Carte struct {
-	inner [][]int
+	Row   int
+	Col   int
+	inner []uint8
 }
 
-func (c Carte) Size() (int, int) {
-	return len(c.inner), len(c.inner[0])
+func (c *Carte) get_raw(x int, y int) uint8 {
+	return c.inner[x*c.Row+y]
 }
 
 func ReadMap(name string) Carte {
@@ -26,14 +29,30 @@ func ReadMap(name string) Carte {
 
 	scanner := bufio.NewScanner(file)
 
-	tab := make([][]int, 0, 4)
-	for scanner.Scan() {
-		inner := make([]int, 0, 4)
-		for _, char := range scanner.Text() {
-			valeur, _ := strconv.ParseInt(string(char), 10, 32)
-			inner = append(inner, int(valeur))
+	if !scanner.Scan() {
+		log.Fatal("map file is invalid")
+	}
+	// Parse map size (<row>x<col>)
+	bits := strings.Split(scanner.Text(), "x")
+	row_, _ := strconv.ParseInt(bits[0], 10, 32)
+	row := int(row_)
+	col_, _ := strconv.ParseInt(bits[1], 10, 32)
+	col := int(col_)
+
+	tab := make([]uint8, row*col, row*col)
+	for i := 0; scanner.Scan(); i++ {
+		for j, char := range scanner.Text() {
+			switch char {
+			case ' ':
+				tab[i*row+j] = 1
+			case 'x':
+				tab[i*row+j] = 9
+			case 'G':
+				tab[i*row+j] = 0
+			case '|':
+				// Protection for trailing whitespaces
+			}
 		}
-		tab = append(tab, inner)
 	}
 
 	// Check for an error
@@ -41,9 +60,17 @@ func ReadMap(name string) Carte {
 		log.Fatal(err)
 	}
 
-	for _, line := range tab {
-		fmt.Printf("%v\n", line)
-	}
+	return Carte{Row: row, Col: col, inner: tab}
+}
 
-	return Carte{inner: tab}
+func (c Carte) String() string {
+	// TODO(guillaume) use tiles
+	var s = ""
+	for i := 0; i < c.Row; i++ {
+		for j := 0; j < c.Col; j++ {
+			s += fmt.Sprint(c.get_raw(i, j))
+		}
+		s += "\n"
+	}
+	return s
 }

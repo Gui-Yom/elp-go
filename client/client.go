@@ -21,7 +21,6 @@ func Start(addr string, port int) {
 		log.Fatal(err)
 	}
 
-	carte := shared.ReadMap("map.txt")
-	ligne, colonne := carte.Size()
-	fmt.Printf("taille : %v, %v\n", ligne, colonne)
+	carte := shared.ReadMap("map0.map")
+	fmt.Printf("%v\n", carte)
 }
