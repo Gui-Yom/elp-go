@@ -13,14 +13,14 @@ func main() {
 	flag.IntVar(&port, "p", 32145, "Specify the port to connect or listen to.")
 	var startServer bool
 	flag.BoolVar(&startServer, "server", false, "Start a startServer.")
-	var remote string
-	flag.StringVar(&remote, "remote", "127.0.0.1", "Host to connect to.")
+	var addr string
+	flag.StringVar(&addr, "addr", "127.0.0.1", "Host to connect to.")
 
 	flag.Parse()
 
 	if startServer {
 		server.Start(port)
 	} else {
-		client.Start(remote, port)
+		client.Start(addr, port)
 	}
 }

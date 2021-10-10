@@ -1,7 +1,6 @@
 package client
 
 import (
-	_map "elp-go/map"
 	"elp-go/shared"
 	"fmt"
 	"log"
@@ -16,11 +15,13 @@ func Start(addr string, port int) {
 		log.Fatal(err)
 	}
 	remote := shared.NewRemote(client)
-	var str string
-	remote.Recv(&str)
-	fmt.Printf("received : %v", str)
+	err = remote.Send(&shared.Message{Msg: "Hello there !"})
+	remote.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	carte := _map.ReadMap("map.txt")
+	carte := shared.ReadMap("map.txt")
 	ligne, colonne := carte.Size()
 	fmt.Printf("taille : %v, %v\n", ligne, colonne)
 }

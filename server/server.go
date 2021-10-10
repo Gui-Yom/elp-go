@@ -22,8 +22,12 @@ func Start(port int) {
 		}
 		go func() {
 			remote := shared.NewRemote(client)
-			remote.Send("Hello there !\n")
-			remote.Close()
+			var msg shared.Message
+			err := remote.Recv(&msg)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("%v\n", msg)
 		}()
 	}
 }

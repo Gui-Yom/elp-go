@@ -8,28 +8,37 @@ import (
 
 type Remote struct {
 	conn    *net.TCPConn
+	bufw    *bufio.Writer
 	encoder *cbor.Encoder
 	decoder *cbor.Decoder
 }
 
 func NewRemote(conn *net.TCPConn) *Remote {
 	// Buffer sizes are arbitrary
+	bufw := bufio.NewWriterSize(conn, 4096)
 	return &Remote{
 		conn:    conn,
-		encoder: cbor.NewEncoder(bufio.NewWriterSize(conn, 4096)),
+		bufw:    bufw,
+		encoder: cbor.NewEncoder(bufw),
 		decoder: cbor.NewDecoder(bufio.NewReaderSize(conn, 4096)),
 	}
 }
 
-func (rem *Remote) Send(v interface{}) {
-	rem.encoder.Encode(v)
+func (rem *Remote) Send(v interface{}) error {
+	err := rem.encoder.Encode(v)
+	rem.bufw.Flush()
+	return err
 }
 
 // Recv v must be a pointer
-func (rem *Remote) Recv(v interface{}) {
-	rem.decoder.Decode(v)
+func (rem *Remote) Recv(v interface{}) error {
+	return rem.decoder.Decode(v)
 }
 
-func (rem *Remote) Close() {
-	rem.conn.Close()
+func (rem *Remote) Close() error {
+	return rem.conn.Close()
+}
+
+type Message struct {
+	Msg string
 }
