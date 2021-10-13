@@ -1,4 +1,4 @@
-package shared
+package main
 
 import (
 	"bufio"
@@ -37,8 +37,4 @@ func (rem *Remote) Recv(v interface{}) error {
 
 func (rem *Remote) Close() error {
 	return rem.conn.Close()
-}
-
-type Message struct {
-	Msg string
 }

@@ -1,4 +1,4 @@
-package shared
+package scenario
 
 import (
 	"bufio"
@@ -34,10 +34,8 @@ func ReadMap(name string) Carte {
 	}
 	// Parse map size (<row>x<col>)
 	bits := strings.Split(scanner.Text(), "x")
-	row_, _ := strconv.ParseInt(bits[0], 10, 32)
-	row := int(row_)
-	col_, _ := strconv.ParseInt(bits[1], 10, 32)
-	col := int(col_)
+	row, _ := strconv.Atoi(bits[0])
+	col, _ := strconv.Atoi(bits[1])
 
 	tab := make([]uint8, row*col, row*col)
 	for i := 0; scanner.Scan(); i++ {

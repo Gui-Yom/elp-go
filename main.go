@@ -1,8 +1,6 @@
 package main
 
 import (
-	"elp-go/client"
-	"elp-go/server"
 	"flag"
 )
 
@@ -19,8 +17,8 @@ func main() {
 	flag.Parse()
 
 	if startServer {
-		server.Start(port)
+		StartServer(port)
 	} else {
-		client.Start(addr, port)
+		StartClient(addr, port)
 	}
 }
