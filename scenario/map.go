@@ -2,11 +2,24 @@ package scenario
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+)
+
+type Tile struct {
+	id   uint8
+	cost int
+}
+
+// No enums, thank you Go
+var (
+	TILE_EMPTY = Tile{id: ' ', cost: 1}
+	TILE_WALL  = Tile{id: 'x', cost: -1}
+	TILE_GOAL  = Tile{id: 'G', cost: 1}
+	// Apparently Go is stupid and just return a copy of the value each time we access it instead of a reference, thank you Go.
+	TILES = map[uint8]Tile{TILE_EMPTY.id: TILE_EMPTY, TILE_WALL.id: TILE_WALL, TILE_GOAL.id: TILE_GOAL}
 )
 
 type Carte struct {
@@ -15,8 +28,12 @@ type Carte struct {
 	inner []uint8
 }
 
-func (c *Carte) get_raw(x int, y int) uint8 {
+func (c *Carte) GetRaw(x int, y int) uint8 {
 	return c.inner[x*c.Row+y]
+}
+
+func (c *Carte) GetTile(x int, y int) Tile {
+	return TILES[c.GetRaw(x, y)]
 }
 
 func ReadMap(name string) Carte {
@@ -39,16 +56,19 @@ func ReadMap(name string) Carte {
 
 	tab := make([]uint8, row*col, row*col)
 	for i := 0; scanner.Scan(); i++ {
-		for j, char := range scanner.Text() {
-			switch char {
-			case ' ':
-				tab[i*row+j] = 1
-			case 'x':
-				tab[i*row+j] = 9
-			case 'G':
-				tab[i*row+j] = 0
-			case '|':
-				// Protection for trailing whitespaces
+		for j, char := range strings.TrimRight(scanner.Text(), " \t\n\r") {
+
+			// We only take the lowest part of the unicode codepoint for ascii
+			id := uint8(char & 0x000000FF)
+			//log.Printf("char: %v, id: %v", char, id)
+
+			// Is end of map line ?
+			if id != '|' {
+				// Is the char is a valid identifier ?
+				if _, exists := TILES[id]; !exists {
+					log.Fatal("Invalid tile : '", id, "'")
+				}
+				tab[i*row+j] = id
 			}
 		}
 	}
@@ -62,11 +82,10 @@ func ReadMap(name string) Carte {
 }
 
 func (c Carte) String() string {
-	// TODO(guillaume) use tiles
 	var s = ""
 	for i := 0; i < c.Row; i++ {
 		for j := 0; j < c.Col; j++ {
-			s += fmt.Sprint(c.get_raw(i, j))
+			s += string(rune(c.GetRaw(i, j)))
 		}
 		s += "\n"
 	}
