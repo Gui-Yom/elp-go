@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+type Position struct {
+	x int
+	y int
+}
+
 type Tile struct {
 	id   uint8
 	cost int

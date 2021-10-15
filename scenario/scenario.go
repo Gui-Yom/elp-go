@@ -6,3 +6,7 @@ type Scenario struct {
 	// taches
 	// parametres
 }
+
+type MoveTask struct {
+	goal Position
+}

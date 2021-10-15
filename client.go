@@ -1,7 +1,7 @@
 package main
 
 import (
-	scenario2 "elp-go/scenario"
+	"elp-go/scenario"
 	"fmt"
 	"log"
 	"net"
@@ -13,12 +13,13 @@ func StartClient(addr string, port int) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	client := NewRemote(conn)
 	defer client.Close()
 
-	carte := scenario2.ReadMap("map0.map")
+	carte := scenario.ReadMap("map0.map")
 	fmt.Printf("%v\n", carte)
-	scenario := scenario2.Scenario{}
+	scenario := scenario.Scenario{}
 
 	err = client.Send(&scenario)
 	if err != nil {
