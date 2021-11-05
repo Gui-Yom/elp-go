@@ -24,12 +24,14 @@ var (
 	TILE_WALL  = Tile{id: 'x', cost: -1}
 	TILE_GOAL  = Tile{id: 'G', cost: 1}
 	TILE_STAIRS = Tile{id: '[', cost: 2}
+	TILE_HEDGE = Tile{id: "H", cost:2}
 	TILE_LADDER = Tile{id: '#', cost: 2}
 	TILE_SLIPPERY_ROCK = Tile{id: '(', cost:3}
 	TILE_HILL = Tile{id:'H', cost: 3}
 	TILE_STREAM = Tile{id: '~', cost: 4}
 	TILE_HOLE = Tile{id: 'o', cost:4}
 	TILE_CAVE = Tile{id:'C', cost: 4}
+	
 
 	// Apparently Go is stupid and just return a copy of the value each time we access it instead of a reference, thank you Go.
 	TILES = map[uint8]Tile{TILE_EMPTY.id: TILE_EMPTY, TILE_WALL.id: TILE_WALL, TILE_GOAL.id: TILE_GOAL}
