@@ -8,6 +8,9 @@ type Dijkstra struct {
 	diagonal bool
 }
 
+// Implementation isn't explicit, thanks Go
+var _ Pathfinder = (*Dijkstra)(nil)
+
 func (dijk Dijkstra) path(carte *scenario.Carte, start scenario.Position, goal scenario.Position) []scenario.Position {
 	costs := make(map[scenario.Position]float32)
 	costs[start] = 0

@@ -6,7 +6,7 @@ import (
 )
 
 type Pathfinder interface {
-	path(start scenario.Position, goal scenario.Position) []scenario.Position
+	path(carte *scenario.Carte, start scenario.Position, goal scenario.Position) []scenario.Position
 }
 
 // makePath creates a path (position slice) from a parent chain and the 2 path ends
