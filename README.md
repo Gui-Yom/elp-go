@@ -37,3 +37,7 @@ git add *
 git commit -m "<message>"
 git push origin
 ```
+
+## Références
+
+https://doi.org/10.1137/1.9781611973198.7

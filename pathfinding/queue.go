@@ -10,13 +10,17 @@ type node struct {
 	// No generics, thanks Go.
 	item interface{}
 	// The priority of this item
-	priority int
+	priority float32
 	children []*node
 }
 
 // push insert an item in the queue.
-func (q *PriorityQueue) push(item interface{}, priority int) {
+func (q *PriorityQueue) push(item interface{}, priority float32) {
 	q.root = merge(q.root, &node{item: item, priority: priority})
+}
+
+func (q *PriorityQueue) empty() bool {
+	return q.root == nil
 }
 
 // pop retrieve an item from the queue
