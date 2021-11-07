@@ -24,7 +24,6 @@ func (astar Astar) path(carte *scenario.Carte, start scenario.Position, goal sce
 
 	var iter uint
 	for !frontier.empty() {
-		time.Sleep(time.Nanosecond)
 		iter++
 		curr := frontier.pop().(scenario.Position)
 

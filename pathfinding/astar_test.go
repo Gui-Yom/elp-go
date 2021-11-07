@@ -26,3 +26,12 @@ func TestAstarMap0(t *testing.T) {
 	log.Printf("path: %v", path)
 	log.Printf("stats: %v", stats)
 }
+
+func TestAstarBigMap(t *testing.T) {
+	astar := Astar{heuristic: Manhattan}
+	carte := scenario.RandomMap(100, 100, 0.5)
+	log.Printf("map:\n%v", carte)
+	path, stats := astar.path(carte, scenario.Position{}, scenario.Position{X: 95, Y: 96})
+	log.Printf("path: %v", path)
+	log.Printf("stats: %v", stats)
+}

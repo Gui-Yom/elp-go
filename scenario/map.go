@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -147,6 +148,18 @@ func ReadMap(r io.Reader) *Carte {
 	}
 
 	return &Carte{Row: row, Col: col, inner: tab}
+}
+
+func RandomMap(row int, col int, fill float32) *Carte {
+	inner := make([]uint8, row*col)
+	for i := 0; i < row*col; i++ {
+		if rand.Float32() < fill {
+			inner[i] = 'x'
+		} else {
+			inner[i] = ' '
+		}
+	}
+	return &Carte{Row: row, Col: col, inner: inner}
 }
 
 func (c Carte) String() string {
