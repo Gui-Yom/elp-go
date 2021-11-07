@@ -1,10 +1,14 @@
 package scenario
 
 type Scenario struct {
-	Carte Carte
+	Carte *Carte
 	// agents
 	// taches
 	// parametres
+}
+
+type Task interface {
+	a()
 }
 
 type MoveTask struct {

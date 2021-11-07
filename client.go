@@ -19,7 +19,7 @@ func StartClient(addr string, port int) {
 
 	carte := scenario.ReadMapFromFile("map0.map")
 	fmt.Printf("%v\n", carte)
-	scenario := scenario.Scenario{Carte: *carte}
+	scenario := scenario.Scenario{Carte: carte}
 
 	err = client.Send(&scenario)
 	if err != nil {

@@ -28,5 +28,6 @@ func StartServer(port int) {
 }
 
 func handleRequest(scenario *scenario.Scenario) {
-
+	log.Printf("scenario: %v", scenario.Carte.Inner)
+	log.Printf("scenario: %v", scenario.Carte)
 }

@@ -59,7 +59,7 @@ func (t *Tile) IsTraversable() bool {
 type Carte struct {
 	Row   int
 	Col   int
-	inner []uint8
+	Inner []uint8
 }
 
 func (c *Carte) IsInBounds(p Position) bool {
@@ -67,7 +67,7 @@ func (c *Carte) IsInBounds(p Position) bool {
 }
 
 func (c *Carte) GetRaw(x int, y int) uint8 {
-	return c.inner[x*c.Row+y]
+	return c.Inner[x*c.Row+y]
 }
 
 func (c *Carte) GetTile(p Position) *Tile {
@@ -147,7 +147,7 @@ func ReadMap(r io.Reader) *Carte {
 		log.Fatal(err)
 	}
 
-	return &Carte{Row: row, Col: col, inner: tab}
+	return &Carte{Row: row, Col: col, Inner: tab}
 }
 
 func RandomMap(row int, col int, fill float32, seed int64) *Carte {
@@ -160,11 +160,11 @@ func RandomMap(row int, col int, fill float32, seed int64) *Carte {
 			inner[i] = ' '
 		}
 	}
-	return &Carte{Row: row, Col: col, inner: inner}
+	return &Carte{Row: row, Col: col, Inner: inner}
 }
 
 func (c Carte) String() string {
-	var s = ""
+	var s = fmt.Sprintf("%vx%v\n", c.Row, c.Col)
 	for i := 0; i < c.Row; i++ {
 		for j := 0; j < c.Col; j++ {
 			s += string(rune(c.GetRaw(i, j)))
