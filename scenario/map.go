@@ -2,6 +2,8 @@ package scenario
 
 import (
 	"bufio"
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -9,33 +11,49 @@ import (
 )
 
 type Position struct {
-	x int
-	y int
+	X int
+	Y int
+}
+
+func (p Position) Plus(o Position) Position {
+	return Position{X: p.X + o.X, Y: p.Y + o.Y}
+}
+
+func (p Position) String() string {
+	return fmt.Sprintf("(%v, %v)", p.X, p.Y)
 }
 
 type Tile struct {
-	id   uint8
-	cost int
+	Id   uint8
+	Cost float32
 }
 
 // No enums, thank you Go
 var (
-	TILE_EMPTY = Tile{id: ' ', cost: 1}
-	TILE_WALL  = Tile{id: 'x', cost: -1}
-	TILE_GOAL  = Tile{id: 'G', cost: 1}
-	TILE_STAIRS = Tile{id: '[', cost: 2}
-	TILE_HEDGE = Tile{id: "H", cost:2}
-	TILE_LADDER = Tile{id: '#', cost: 2}
-	TILE_SLIPPERY_ROCK = Tile{id: '(', cost:3}
-	TILE_HILL = Tile{id:'H', cost: 3}
-	TILE_STREAM = Tile{id: '~', cost: 4}
-	TILE_HOLE = Tile{id: 'o', cost:4}
-	TILE_CAVE = Tile{id:'C', cost: 4}
-	
+	TILE_EMPTY         = &Tile{Id: ' ', Cost: 1}
+	TILE_WALL          = &Tile{Id: 'x', Cost: -1}
+	TILE_GOAL          = &Tile{Id: 'G', Cost: 1}
+	TILE_CONVEYOR_BELT = &Tile{Id: 'C', Cost: 0.5}
+	TILE_STAIRS        = &Tile{Id: '[', Cost: 2}
+	TILE_LADDER        = &Tile{Id: '#', Cost: 2}
+	TILE_SLIPPERY_ROCK = &Tile{Id: '(', Cost: 3}
+	TILE_HILL          = &Tile{Id: 'H', Cost: 3}
+	TILE_STREAM        = &Tile{Id: '~', Cost: 4}
+	TILE_HOLE          = &Tile{Id: 'o', Cost: 4}
+	TILE_CAVE          = &Tile{Id: 'C', Cost: 4}
 
-	// Apparently Go is stupid and just return a copy of the value each time we access it instead of a reference, thank you Go.
-	TILES = map[uint8]Tile{TILE_EMPTY.id: TILE_EMPTY, TILE_WALL.id: TILE_WALL, TILE_GOAL.id: TILE_GOAL}
+	TILES = map[uint8]*Tile{
+		TILE_EMPTY.Id:         TILE_EMPTY,
+		TILE_WALL.Id:          TILE_WALL,
+		TILE_GOAL.Id:          TILE_GOAL,
+		TILE_CONVEYOR_BELT.Id: TILE_CONVEYOR_BELT,
+	}
 )
+
+// IsTraversable a tile is traversable if its cost is > 0
+func (t *Tile) IsTraversable() bool {
+	return t.Cost > 0
+}
 
 type Carte struct {
 	Row   int
@@ -43,15 +61,43 @@ type Carte struct {
 	inner []uint8
 }
 
+func (c *Carte) IsInBounds(p Position) bool {
+	return p.X >= 0 && p.X < c.Col && p.Y >= 0 && p.Y < c.Row
+}
+
 func (c *Carte) GetRaw(x int, y int) uint8 {
 	return c.inner[x*c.Row+y]
 }
 
-func (c *Carte) GetTile(x int, y int) Tile {
-	return TILES[c.GetRaw(x, y)]
+func (c *Carte) GetTile(p Position) *Tile {
+	return TILES[c.GetRaw(p.X, p.Y)]
 }
 
-func ReadMap(name string) Carte {
+// GetNeighbors returns traversable tiles around position (x, y)
+func (c *Carte) GetNeighbors(p Position, diagonal bool) []Position {
+	// No functional programming, thanks Go
+	var arr []Position
+	var offsets []Position
+	if diagonal {
+		arr = make([]Position, 0, 8)
+		offsets = []Position{
+			{X: -1, Y: 1}, {Y: 1}, {X: 1, Y: 1},
+			{X: -1}, {X: 1},
+			{X: -1, Y: -1}, {Y: -1}, {X: 1, Y: -1}}
+	} else {
+		arr = make([]Position, 0, 4)
+		offsets = []Position{{X: 1}, {Y: 1}, {X: -1}, {Y: -1}}
+	}
+	for _, offset := range offsets {
+		n := p.Plus(offset)
+		if c.IsInBounds(n) && c.GetTile(n).IsTraversable() {
+			arr = append(arr, n)
+		}
+	}
+	return arr
+}
+
+func ReadMapFromFile(name string) *Carte {
 	file, err := os.Open(name)
 	if err != nil {
 		log.Fatal(err)
@@ -59,7 +105,15 @@ func ReadMap(name string) Carte {
 	// Schedule file close immediately
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+	return ReadMap(file)
+}
+
+func ReadMapFromString(mapText string) *Carte {
+	return ReadMap(strings.NewReader(mapText))
+}
+
+func ReadMap(r io.Reader) *Carte {
+	scanner := bufio.NewScanner(r)
 
 	if !scanner.Scan() {
 		log.Fatal("map file is invalid")
@@ -71,11 +125,10 @@ func ReadMap(name string) Carte {
 
 	tab := make([]uint8, row*col, row*col)
 	for i := 0; scanner.Scan(); i++ {
-		for j, char := range strings.TrimRight(scanner.Text(), " \t\n\r") {
+		for j, char := range strings.TrimRight(scanner.Text(), "\t\n\r") {
 
 			// We only take the lowest part of the unicode codepoint for ascii
 			id := uint8(char & 0x000000FF)
-			//log.Printf("char: %v, id: %v", char, id)
 
 			// Is end of map line ?
 			if id != '|' {
@@ -93,7 +146,7 @@ func ReadMap(name string) Carte {
 		log.Fatal(err)
 	}
 
-	return Carte{Row: row, Col: col, inner: tab}
+	return &Carte{Row: row, Col: col, inner: tab}
 }
 
 func (c Carte) String() string {

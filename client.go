@@ -17,9 +17,9 @@ func StartClient(addr string, port int) {
 	client := NewRemote(conn)
 	defer client.Close()
 
-	carte := scenario.ReadMap("map0.map")
+	carte := scenario.ReadMapFromFile("map0.map")
 	fmt.Printf("%v\n", carte)
-	scenario := scenario.Scenario{}
+	scenario := scenario.Scenario{Carte: *carte}
 
 	err = client.Send(&scenario)
 	if err != nil {
