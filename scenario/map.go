@@ -150,7 +150,8 @@ func ReadMap(r io.Reader) *Carte {
 	return &Carte{Row: row, Col: col, inner: tab}
 }
 
-func RandomMap(row int, col int, fill float32) *Carte {
+func RandomMap(row int, col int, fill float32, seed int64) *Carte {
+	rand := rand.New(rand.NewSource(seed))
 	inner := make([]uint8, row*col)
 	for i := 0; i < row*col; i++ {
 		if rand.Float32() < fill {

@@ -23,9 +23,11 @@ func (astar Astar) path(carte *scenario.Carte, start scenario.Position, goal sce
 	parentChain := make(map[scenario.Position]scenario.Position)
 
 	var iter uint
+	var curr scenario.Position
+
 	for !frontier.empty() {
 		iter++
-		curr := frontier.pop().(scenario.Position)
+		curr = frontier.pop().(scenario.Position)
 
 		if curr == goal {
 			break
@@ -42,6 +44,9 @@ func (astar Astar) path(carte *scenario.Carte, start scenario.Position, goal sce
 				frontier.push(node, newCost+astar.heuristic(node, goal))
 			}
 		}
+	}
+	if curr != goal {
+		return nil, Stats{Iterations: iter, Duration: time.Now().Sub(startTime)}
 	}
 	path := makePath(parentChain, start, goal)
 	return path, Stats{Iterations: iter, Duration: time.Now().Sub(startTime), Cost: pathCost(carte, path)}

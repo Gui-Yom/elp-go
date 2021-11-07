@@ -23,13 +23,16 @@ func (dijk Dijkstra) path(carte *scenario.Carte, start scenario.Position, goal s
 	parentChain := make(map[scenario.Position]scenario.Position)
 
 	var iter uint
+	var curr scenario.Position
+
 	for !frontier.empty() {
-		iter++
-		curr := frontier.pop().(scenario.Position)
+		curr = frontier.pop().(scenario.Position)
 
 		if curr == goal {
 			break
 		}
+
+		iter++
 
 		neighbors := carte.GetNeighbors(curr, dijk.diagonal)
 		for _, node := range neighbors {
@@ -42,6 +45,9 @@ func (dijk Dijkstra) path(carte *scenario.Carte, start scenario.Position, goal s
 				frontier.push(node, newCost)
 			}
 		}
+	}
+	if curr != goal {
+		return nil, Stats{Iterations: iter, Duration: time.Now().Sub(startTime)}
 	}
 	path := makePath(parentChain, start, goal)
 	return path, Stats{Iterations: iter, Duration: time.Now().Sub(startTime), Cost: pathCost(carte, path)}

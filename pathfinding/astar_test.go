@@ -28,10 +28,19 @@ func TestAstarMap0(t *testing.T) {
 }
 
 func TestAstarBigMap(t *testing.T) {
-	astar := Astar{heuristic: Manhattan}
-	carte := scenario.RandomMap(100, 100, 0.5)
+	astar := Astar{diagonal: true, heuristic: Euclidean}
+	carte := scenario.RandomMap(100, 100, 0.30, 42)
 	log.Printf("map:\n%v", carte)
-	path, stats := astar.path(carte, scenario.Position{}, scenario.Position{X: 95, Y: 96})
+	path, stats := astar.path(carte, scenario.Position{}, scenario.Position{X: 98, Y: 97})
+	log.Printf("path: %v", path)
+	log.Printf("stats: %v", stats)
+}
+
+func TestAstarBiggerMap(t *testing.T) {
+	astar := Astar{diagonal: true, heuristic: Euclidean}
+	carte := scenario.RandomMap(300, 300, 0.30, 42)
+	log.Printf("map:\n%v", carte)
+	path, stats := astar.path(carte, scenario.Position{}, scenario.Position{X: 298, Y: 298})
 	log.Printf("path: %v", path)
 	log.Printf("stats: %v", stats)
 }
