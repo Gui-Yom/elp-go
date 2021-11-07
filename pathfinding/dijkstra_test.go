@@ -14,6 +14,15 @@ xx
     
     `)
 	log.Printf("map:\n%v", carte)
-	path := dijk.path(carte, scenario.Position{X: 0}, scenario.Position{X: 3})
+	path, _ := dijk.path(carte, scenario.Position{X: 0}, scenario.Position{X: 3})
 	log.Printf("path: %v", path)
+}
+
+func TestDijkstraMap0(t *testing.T) {
+	dijk := Dijkstra{}
+	carte := scenario.ReadMapFromFile("../map0.map")
+	log.Printf("map:\n%v", carte)
+	path, stats := dijk.path(carte, scenario.Position{}, scenario.Position{X: 9, Y: 9})
+	log.Printf("path: %v", path)
+	log.Printf("stats: %v", stats)
 }

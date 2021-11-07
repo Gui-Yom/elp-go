@@ -2,16 +2,19 @@ package pathfinding
 
 import (
 	"elp-go/scenario"
+	"time"
 )
 
 type Dijkstra struct {
 	diagonal bool
 }
 
-// Implementation isn't explicit, thanks Go
+// Implementation is implicit, thanks Go
 var _ Pathfinder = (*Dijkstra)(nil)
 
-func (dijk Dijkstra) path(carte *scenario.Carte, start scenario.Position, goal scenario.Position) []scenario.Position {
+func (dijk Dijkstra) path(carte *scenario.Carte, start scenario.Position, goal scenario.Position) ([]scenario.Position, Stats) {
+	startTime := time.Now()
+
 	costs := make(map[scenario.Position]float32)
 	costs[start] = 0
 
@@ -19,7 +22,9 @@ func (dijk Dijkstra) path(carte *scenario.Carte, start scenario.Position, goal s
 	frontier.push(start, 0)
 	parentChain := make(map[scenario.Position]scenario.Position)
 
+	var iter uint
 	for !frontier.empty() {
+		iter++
 		curr := frontier.pop().(scenario.Position)
 
 		if curr == goal {
@@ -38,5 +43,6 @@ func (dijk Dijkstra) path(carte *scenario.Carte, start scenario.Position, goal s
 			}
 		}
 	}
-	return makePath(parentChain, start, goal)
+	path := makePath(parentChain, start, goal)
+	return path, Stats{Iterations: iter, Duration: time.Now().Sub(startTime), Cost: pathCost(carte, path)}
 }

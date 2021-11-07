@@ -1,6 +1,9 @@
 package pathfinding
 
-import "elp-go/scenario"
+import (
+	"elp-go/scenario"
+	"time"
+)
 
 type Astar struct {
 	diagonal  bool
@@ -9,7 +12,9 @@ type Astar struct {
 
 var _ Pathfinder = (*Astar)(nil)
 
-func (astar Astar) path(carte *scenario.Carte, start scenario.Position, goal scenario.Position) []scenario.Position {
+func (astar Astar) path(carte *scenario.Carte, start scenario.Position, goal scenario.Position) ([]scenario.Position, Stats) {
+	startTime := time.Now()
+
 	costs := make(map[scenario.Position]float32)
 	costs[start] = 0
 
@@ -17,7 +22,10 @@ func (astar Astar) path(carte *scenario.Carte, start scenario.Position, goal sce
 	frontier.push(start, 0)
 	parentChain := make(map[scenario.Position]scenario.Position)
 
+	var iter uint
 	for !frontier.empty() {
+		time.Sleep(time.Nanosecond)
+		iter++
 		curr := frontier.pop().(scenario.Position)
 
 		if curr == goal {
@@ -36,5 +44,6 @@ func (astar Astar) path(carte *scenario.Carte, start scenario.Position, goal sce
 			}
 		}
 	}
-	return makePath(parentChain, start, goal)
+	path := makePath(parentChain, start, goal)
+	return path, Stats{Iterations: iter, Duration: time.Now().Sub(startTime), Cost: pathCost(carte, path)}
 }
