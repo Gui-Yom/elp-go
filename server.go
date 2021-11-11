@@ -27,7 +27,7 @@ func StartServer(port int) {
 	}
 }
 
-func handleRequest(scenario *scenario.Scenario) {
+func handleRequest(scenario *scenario.Scenario) { //la fonction qui est appelée quand on reçoit une requête du client
 	log.Printf("scenario: %v", scenario.Carte.Inner)
 	log.Printf("scenario: %v", scenario.Carte)
 }
