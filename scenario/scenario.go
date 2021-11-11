@@ -3,6 +3,7 @@ package scenario
 type Scenario struct {
 	Carte *Carte
 	// agents
+	Agent *Agent
 	// taches
 	// parametres
 }
