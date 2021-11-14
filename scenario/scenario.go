@@ -10,11 +10,24 @@ type Scenario struct {
 }
 
 type Task interface {
-	a()
+	howlong() float64
 }
 
 
 
 type MoveTask struct {
-	goal Position
+	//goal Position
+	name string
+}
+
+func (m MoveTask) howlong() float64{
+	return 5
+}
+
+type fixingBike struct {
+	name string
+}
+
+func (f fixingBike) howlong() float64{
+	return 7
 }
