@@ -15,6 +15,7 @@ func findTask(listTasks [] Task) {
 		//j'essaie de trouver une tâche
 		//je la fais
 		//je la coche
+		//removeElement(listTasks,taskToDo,0)
 		//et rebelote
 		findTask(listTasks)
 	}else{

@@ -5,15 +5,13 @@ type Scenario struct {
 	// agents
 	Agent *Agent
 	// liste de taches
-	
+	ListTasks *[]Task
 	// parametres
 }
 
 type Task interface {
 	howlong() float64
 }
-
-
 
 type MoveTask struct {
 	//goal Position
