@@ -1,24 +1,34 @@
 package scenario
 
-import(
+import (
 	"fmt"
+	"log"
 )
 
 type Agent struct {
-	//id
-	//position
+	Id  uint
+	Pos Position
+}
+
+func (a Agent) ExecuteTask(task Task) {
+	switch t := task.(type) {
+	case MoveTask:
+		log.Printf("t: %v", t)
+	default:
+		log.Fatalf("Unimplemented task : %v", t)
+	}
 }
 
 //boucle qui lit la liste de tâches
-func findTask(listTasks [] Task) {
-	if len(listTasks) != 0{
+func findTask(listTasks []Task) {
+	if len(listTasks) != 0 {
 		//j'essaie de trouver une tâche
 		//je la fais
 		//je la coche
 		//removeElement(listTasks,taskToDo,0)
 		//et rebelote
 		findTask(listTasks)
-	}else{
+	} else {
 		fmt.Println("La liste de tâches est vide")
 	}
 }

@@ -16,6 +16,10 @@ type Position struct {
 	Y int
 }
 
+func Pos(x, y int) Position {
+	return Position{X: x, Y: y}
+}
+
 func (p Position) Plus(o Position) Position {
 	return Position{X: p.X + o.X, Y: p.Y + o.Y}
 }
@@ -57,17 +61,17 @@ func (t *Tile) IsTraversable() bool {
 }
 
 type Carte struct {
-	Row   int
-	Col   int
-	Inner []uint8
+	Width  int
+	Height int
+	Inner  []uint8
 }
 
 func (c *Carte) IsInBounds(p Position) bool {
-	return p.X >= 0 && p.X < c.Col && p.Y >= 0 && p.Y < c.Row
+	return p.X >= 0 && p.X < c.Width && p.Y >= 0 && p.Y < c.Height
 }
 
 func (c *Carte) GetRaw(x int, y int) uint8 {
-	return c.Inner[x*c.Row+y]
+	return c.Inner[y*c.Width+x]
 }
 
 func (c *Carte) GetTile(p Position) *Tile {
@@ -98,7 +102,7 @@ func (c *Carte) GetNeighbors(p Position, diagonal bool) []Position {
 	return arr
 }
 
-func ReadMapFromFile(name string) *Carte {
+func NewMapFromFile(name string) *Carte {
 	file, err := os.Open(name)
 	if err != nil {
 		log.Fatal(err)
@@ -106,25 +110,25 @@ func ReadMapFromFile(name string) *Carte {
 	// Schedule file close immediately
 	defer file.Close()
 
-	return ReadMap(file)
+	return NewMap(file)
 }
 
-func ReadMapFromString(mapText string) *Carte {
-	return ReadMap(strings.NewReader(mapText))
+func NewMapFromString(mapText string) *Carte {
+	return NewMap(strings.NewReader(mapText))
 }
 
-func ReadMap(r io.Reader) *Carte {
+func NewMap(r io.Reader) *Carte {
 	scanner := bufio.NewScanner(r)
 
 	if !scanner.Scan() {
 		log.Fatal("map file is invalid")
 	}
-	// Parse map size (<row>x<col>)
+	// Parse map size (<width>x<height>)
 	bits := strings.Split(scanner.Text(), "x")
-	row, _ := strconv.Atoi(bits[0])
-	col, _ := strconv.Atoi(bits[1])
+	width, _ := strconv.Atoi(bits[0])
+	height, _ := strconv.Atoi(bits[1])
 
-	tab := make([]uint8, row*col, row*col)
+	tab := make([]uint8, width*height)
 	for i := 0; scanner.Scan(); i++ {
 		for j, char := range strings.TrimRight(scanner.Text(), "\t\n\r") {
 
@@ -137,7 +141,7 @@ func ReadMap(r io.Reader) *Carte {
 				if _, exists := TILES[id]; !exists {
 					log.Fatal("Invalid tile : '", id, "'")
 				}
-				tab[i*row+j] = id
+				tab[i*width+j] = id
 			}
 		}
 	}
@@ -147,26 +151,26 @@ func ReadMap(r io.Reader) *Carte {
 		log.Fatal(err)
 	}
 
-	return &Carte{Row: row, Col: col, Inner: tab}
+	return &Carte{Width: width, Height: height, Inner: tab}
 }
 
-func RandomMap(row int, col int, fill float32, seed int64) *Carte {
+func NewMapRandom(width int, height int, fill float32, seed int64) *Carte {
 	rand := rand.New(rand.NewSource(seed))
-	inner := make([]uint8, row*col)
-	for i := 0; i < row*col; i++ {
+	inner := make([]uint8, width*height)
+	for i := 0; i < width*height; i++ {
 		if rand.Float32() < fill {
 			inner[i] = 'x'
 		} else {
 			inner[i] = ' '
 		}
 	}
-	return &Carte{Row: row, Col: col, Inner: inner}
+	return &Carte{Width: width, Height: height, Inner: inner}
 }
 
 func (c Carte) String() string {
-	var s = fmt.Sprintf("%vx%v\n", c.Row, c.Col)
-	for i := 0; i < c.Row; i++ {
-		for j := 0; j < c.Col; j++ {
+	var s = fmt.Sprintf("%vx%v\n", c.Width, c.Height)
+	for j := 0; j < c.Height; j++ {
+		for i := 0; i < c.Width; i++ {
 			s += string(rune(c.GetRaw(i, j)))
 		}
 		s += "\n"

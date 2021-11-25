@@ -16,6 +16,22 @@ Serveur (pour chaque client):
 - Envoi des résultats (opérations + statistiques)
 - Retour à l'étape 1
 
+## Build
+
+Sur Windows :
+
+```shell
+> build.bat
+```
+
+Sur Unix :
+
+```shell
+$ ./build.sh
+```
+
+L'éxecutable final se trouve dans `target/`.
+
 ## Git
 
 Pour récupérer le repo :

@@ -1,31 +1,36 @@
 package scenario
 
+import "container/list"
+
 type Scenario struct {
-	Carte *Carte
-	// agents
-	Agent *Agent
-	// liste de taches
-	ListTasks *[]Task
-	// parametres
+	Carte     *Carte
+	Tasks     list.List
+	NumAgents int
+}
+
+func (s *Scenario) PopTask() Task {
+	elem := s.Tasks.Front()
+	if elem == nil {
+		return nil
+	} else {
+		return s.Tasks.Remove(elem).(Task)
+	}
+}
+
+type CompletedTask struct {
+}
+
+type ScenarioResult struct {
 }
 
 type Task interface {
-	howlong() float64
+	a()
 }
 
 type MoveTask struct {
-	//goal Position
-	name string
+	goal Position
 }
 
-func (m MoveTask) howlong() float64{
-	return 5
-}
+func (this MoveTask) a() {
 
-type fixingBike struct {
-	name string
-}
-
-func (f fixingBike) howlong() float64{
-	return 7
 }

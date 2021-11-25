@@ -4,6 +4,7 @@ import (
 	"elp-go/scenario"
 	"log"
 	"net"
+	"sync"
 )
 
 // StartServer Main func when running a server
@@ -27,7 +28,26 @@ func StartServer(port int) {
 	}
 }
 
-func handleRequest(scenario *scenario.Scenario) { //la fonction qui est appelée quand on reçoit une requête du client
-	log.Printf("scenario: %v", scenario.Carte.Inner)
-	log.Printf("scenario: %v", scenario.Carte)
+func handleRequest(scen *scenario.Scenario) {
+	sequential := false
+
+	if sequential {
+		for i := 0; i < 1; i++ {
+
+		}
+	} else {
+		wg := sync.WaitGroup{}
+		for i := 0; i < 1; i++ {
+			go func() {
+				wg.Add(1)
+				agent := scenario.Agent{}
+				for scen.Tasks.Len() > 0 {
+					task := scen.PopTask()
+					agent.ExecuteTask(task)
+				}
+				wg.Done()
+			}()
+		}
+		wg.Wait()
+	}
 }
