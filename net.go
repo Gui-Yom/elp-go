@@ -26,6 +26,7 @@ func NewRemote(conn *net.TCPConn) *Remote {
 
 func (rem *Remote) Send(v interface{}) error {
 	err := rem.encoder.Encode(v)
+	// With a call to Send, we expect the data to be sent immediately
 	rem.bufw.Flush()
 	return err
 }

@@ -14,6 +14,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -42,21 +43,64 @@ func fillMyList(l []scenario.Task) {
 }
 
 // StartClient Main func when running a client
-func StartClient(addr string, port int) {
-	conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: net.ParseIP(addr), Port: port})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	client := NewRemote(conn)
-	defer client.Close()
+func StartClient(addr string, port int, gui bool, mapArgs []string) {
 
 	myListTasks := []scenario.Task{}
 	fillMyList(myListTasks)
-	carte := scenario.NewMapFromFile("map0.map")
-	fmt.Printf("%v\n", carte)
+
+	parseError := func(value, name, type_ string) {
+		fmt.Printf("Can't parse %v '%v' as a valid %v", name, value, type_)
+		os.Exit(-1)
+	}
+
+	var carte *scenario.Carte
+	if len(mapArgs) == 0 || mapArgs[0] == "rand" {
+		var width int = 16
+		if len(mapArgs) >= 2 {
+			if num, err := strconv.ParseInt(mapArgs[1], 10, 32); err == nil {
+				width = int(num)
+			} else {
+				parseError(mapArgs[1], "width", "int")
+			}
+		}
+		var height int = 16
+		if len(mapArgs) >= 3 {
+			if num, err := strconv.ParseInt(mapArgs[2], 10, 32); err == nil {
+				height = int(num)
+			} else {
+				parseError(mapArgs[2], "height", "int")
+			}
+		}
+		var fill float32 = 0.2
+		if len(mapArgs) >= 4 {
+			if num, err := strconv.ParseFloat(mapArgs[3], 32); err == nil {
+				fill = float32(num)
+			} else {
+				parseError(mapArgs[3], "fill", "float")
+			}
+		}
+		var seed int64 = 42
+		if len(mapArgs) >= 5 {
+			if num, err := strconv.ParseInt(mapArgs[4], 10, 64); err == nil {
+				seed = num
+			} else {
+				parseError(mapArgs[4], "seed", "int")
+			}
+		}
+		carte = scenario.NewMapRandom(width, height, fill, seed)
+	} else {
+		carte = scenario.NewMapFromFile(mapArgs[0])
+	}
+	scenario := scenario.Scenario{Carte: carte, DiagonalMovement: true, NumAgents: 1}
+
 	go func() {
-		scenario := scenario.Scenario{Carte: carte}
+		conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: net.ParseIP(addr), Port: port})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		client := NewRemote(conn)
+		defer client.Close()
 
 		err = client.Send(&scenario)
 		if err != nil {
@@ -64,15 +108,19 @@ func StartClient(addr string, port int) {
 		}
 	}()
 
-	showMap(carte)
+	if gui {
+		showScenario(&scenario)
+	}
 }
 
-func showMap(carte *scenario.Carte) {
+func showScenario(scen *scenario.Scenario) {
 	a := app.NewWithID("marais.elp-go")
 	//a.SetIcon(theme.SearchIcon())
 	w := a.NewWindow("Map display")
 	w.SetPadded(false)
 	w.SetMaster()
+
+	carte := scen.Carte
 
 	canvas := container.NewMax(canvas.NewRaster(func(w, h int) image.Image {
 		ctx := gg.NewContext(w, h)
@@ -92,7 +140,8 @@ func showMap(carte *scenario.Carte) {
 				ctx.Fill()
 			}
 		}
-		ctx.DrawString("test", 10, 10)
+		ctx.SetRGB(0.0, 0.0, 1.0)
+		ctx.DrawString(fmt.Sprintf("N: %v, Diagonal: %v", scen.NumAgents, scen.DiagonalMovement), 5, float64(h-10))
 		return ctx.Image()
 	}))
 

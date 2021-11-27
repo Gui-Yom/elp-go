@@ -3,9 +3,10 @@ package scenario
 import "container/list"
 
 type Scenario struct {
-	Carte     *Carte
-	Tasks     list.List
-	NumAgents int
+	Carte            *Carte
+	DiagonalMovement bool
+	Tasks            list.List
+	NumAgents        int
 }
 
 func (s *Scenario) PopTask() Task {
