@@ -13,14 +13,14 @@ func main() {
 	flag.BoolVar(&startServer, "server", false, "Start a startServer.")
 	var addr string
 	flag.StringVar(&addr, "addr", "127.0.0.1", "Host to connect to.")
-	var gui bool
-	flag.BoolVar(&gui, "nogui", true, "Disable GUI")
+	var nogui bool
+	flag.BoolVar(&nogui, "nogui", false, "Disable GUI")
 
 	flag.Parse()
 
 	if startServer {
 		StartServer(port)
 	} else {
-		StartClient(addr, port, gui, flag.Args())
+		StartClient(addr, port, !nogui, flag.Args())
 	}
 }

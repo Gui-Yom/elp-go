@@ -1,13 +1,12 @@
-package pathfinding
+package internal
 
 import (
-	"elp-go/scenario"
 	"fmt"
 	"time"
 )
 
 type Pathfinder interface {
-	path(carte *scenario.Carte, start scenario.Position, goal scenario.Position) ([]scenario.Position, Stats)
+	FindPath(carte *Carte, start Position, goal Position) ([]Position, Stats)
 }
 
 type Stats struct {
@@ -24,8 +23,8 @@ func (s Stats) String() string {
 }
 
 // makePath creates a path (position slice) from a parent chain and the 2 path ends
-func makePath(parentChain map[scenario.Position]scenario.Position, start scenario.Position, goal scenario.Position) []scenario.Position {
-	path := make([]scenario.Position, 1, len(parentChain))
+func makePath(parentChain map[Position]Position, start Position, goal Position) []Position {
+	path := make([]Position, 1, len(parentChain))
 	path[0] = goal
 	// Follow the parentChain to create the path from the goal
 	for curr := goal; curr != start; {
@@ -40,7 +39,7 @@ func makePath(parentChain map[scenario.Position]scenario.Position, start scenari
 	return path
 }
 
-func pathCost(carte *scenario.Carte, path []scenario.Position) (cost float32) {
+func pathCost(carte *Carte, path []Position) (cost float32) {
 	for _, p := range path[1:] {
 		cost += carte.GetTile(p).Cost
 	}

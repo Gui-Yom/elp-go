@@ -1,4 +1,4 @@
-package pathfinding
+package internal
 
 // PriorityQueue a priority queue based on a pairing heap.
 // see https://en.wikipedia.org/wiki/Pairing_heap.

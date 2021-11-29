@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"elp-go/scenario"
+	"elp-go/internal"
 	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -16,6 +16,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 //fonction qui permet de récupérer un input
@@ -26,7 +27,7 @@ func getInput(prompt string, r *bufio.Reader) (string, error) {
 	return strings.TrimSpace(input), err
 }
 
-func fillMyList(l []scenario.Task) {
+func fillMyList(l []internal.Task) {
 	reader := bufio.NewReader(os.Stdin)
 	opt, _ := getInput("Choose option (a -add a task, -s save the list): ", reader)
 
@@ -45,15 +46,16 @@ func fillMyList(l []scenario.Task) {
 // StartClient Main func when running a client
 func StartClient(addr string, port int, gui bool, mapArgs []string) {
 
-	myListTasks := []scenario.Task{}
-	fillMyList(myListTasks)
+	//myListTasks := []internal.Task{}
+	//fillMyList(myListTasks)
 
 	parseError := func(value, name, type_ string) {
 		fmt.Printf("Can't parse %v '%v' as a valid %v", name, value, type_)
 		os.Exit(-1)
 	}
 
-	var carte *scenario.Carte
+	var carte *internal.Carte
+	// Parsing des arguments de création de map
 	if len(mapArgs) == 0 || mapArgs[0] == "rand" {
 		var width int = 16
 		if len(mapArgs) >= 2 {
@@ -87,13 +89,18 @@ func StartClient(addr string, port int, gui bool, mapArgs []string) {
 				parseError(mapArgs[4], "seed", "int")
 			}
 		}
-		carte = scenario.NewMapRandom(width, height, fill, seed)
+		carte = internal.NewMapRandom(width, height, fill, seed)
 	} else {
-		carte = scenario.NewMapFromFile(mapArgs[0])
+		carte = internal.NewMapFromFile(mapArgs[0])
 	}
-	scenario := scenario.Scenario{Carte: carte, DiagonalMovement: true, NumAgents: 1}
+	tasks := []interface{}{internal.MoveTask{Goal: internal.Pos(16, 16)}}
+	scen := internal.Scenario{Carte: carte, DiagonalMovement: true, NumAgents: 1, Tasks: tasks}
 
+	wait := sync.Mutex{}
+	wait.Lock()
 	go func() {
+		defer wait.Unlock()
+
 		conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: net.ParseIP(addr), Port: port})
 		if err != nil {
 			log.Fatal(err)
@@ -102,18 +109,25 @@ func StartClient(addr string, port int, gui bool, mapArgs []string) {
 		client := NewRemote(conn)
 		defer client.Close()
 
-		err = client.Send(&scenario)
+		err = client.Send(&scen)
 		if err != nil {
 			log.Fatal(err)
 		}
+		var result internal.ScenarioResult
+		if err := client.Recv(&result); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("result : %v", result)
 	}()
 
 	if gui {
-		showScenario(&scenario)
+		showScenario(&scen)
 	}
+	// This effectively waits for the goroutine to end
+	wait.Lock()
 }
 
-func showScenario(scen *scenario.Scenario) {
+func showScenario(scen *internal.Scenario) {
 	a := app.NewWithID("marais.elp-go")
 	//a.SetIcon(theme.SearchIcon())
 	w := a.NewWindow("Map display")
@@ -129,10 +143,10 @@ func showScenario(scen *scenario.Scenario) {
 		for j := 0; j < carte.Height; j++ {
 			for i := 0; i < carte.Width; i++ {
 				ctx.DrawRectangle(float64(i)*tileWidth, float64(j)*tileHeigth, tileWidth, tileHeigth)
-				switch carte.GetTile(scenario.Pos(i, j)) {
-				case scenario.TILE_EMPTY:
+				switch carte.GetTile(internal.Pos(i, j)) {
+				case internal.TILE_EMPTY:
 					ctx.SetColor(color.White)
-				case scenario.TILE_WALL:
+				case internal.TILE_WALL:
 					ctx.SetRGB(0.0, 0.0, 0.0)
 				default:
 					ctx.SetRGB(1.0, 0.0, 0.0)

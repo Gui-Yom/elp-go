@@ -1,22 +1,35 @@
-package scenario
+package internal
 
 import (
 	"fmt"
 	"log"
+	"sync/atomic"
 )
 
+// Warning ! Use atomic operations
+var idCounter uint32
+
 type Agent struct {
-	Id  uint
-	Pos Position
+	Id         uint32
+	Pos        Position
+	pathfinder Pathfinder
 }
 
-func (a Agent) ExecuteTask(task Task) {
+func NewAgent(pos Position, pathfinder Pathfinder) Agent {
+	return Agent{Id: atomic.AddUint32(&idCounter, 1), Pos: pos, pathfinder: pathfinder}
+}
+
+func (a Agent) ExecuteTask(carte *Carte, task Task) CompletedTask {
 	switch t := task.(type) {
 	case MoveTask:
-		log.Printf("t: %v", t)
+		log.Printf("%v -> %v", a.Id, t)
+		path, _ := a.pathfinder.FindPath(carte, a.Pos, t.Goal)
+		// TODO(guillaume) pass stats
+		return CompletedTask{AgentId: a.Id, Path: path}
 	default:
 		log.Fatalf("Unimplemented task : %v", t)
 	}
+	return CompletedTask{}
 }
 
 //boucle qui lit la liste de tâches
