@@ -14,7 +14,7 @@ type PriorityQueue interface {
 
 // NewPairing Creates a new priority queue based on a pairing heap
 func NewPairing() PriorityQueue {
-	return pairingQueue{}
+	return &pairingQueue{}
 }
 
 // NewNaive Creates a new priority queue based a naive sorted list insert.

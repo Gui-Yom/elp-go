@@ -16,15 +16,15 @@ type pqnode struct {
 	children []*pqnode
 }
 
-func (q pairingQueue) Push(item interface{}, priority float32) {
+func (q *pairingQueue) Push(item interface{}, priority float32) {
 	q.root = merge(q.root, &pqnode{item: item, priority: priority})
 }
 
-func (q pairingQueue) Empty() bool {
+func (q *pairingQueue) Empty() bool {
 	return q.root == nil
 }
 
-func (q pairingQueue) Pop() interface{} {
+func (q *pairingQueue) Pop() interface{} {
 	if q.root == nil {
 		return nil
 	}
