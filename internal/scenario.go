@@ -1,7 +1,9 @@
 package internal
 
+import "elp-go/internal/pathfinding"
+
 type Scenario struct {
-	Carte            *Carte
+	Carte            *pathfinding.Carte
 	DiagonalMovement bool
 	Tasks            []interface{}
 	NumAgents        uint32
@@ -9,7 +11,7 @@ type Scenario struct {
 
 type CompletedTask struct {
 	AgentId uint32
-	Path    []Position
+	Path    []pathfinding.Position
 }
 
 type ScenarioResult struct {
@@ -21,7 +23,7 @@ type Task interface {
 }
 
 type MoveTask struct {
-	Goal Position
+	Goal pathfinding.Position
 }
 
 func (this MoveTask) a() {

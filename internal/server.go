@@ -1,7 +1,7 @@
-package main
+package internal
 
 import (
-	"elp-go/internal"
+	"elp-go/internal/pathfinding"
 	"log"
 	"net"
 	"sync"
@@ -25,7 +25,7 @@ func StartServer(port int) {
 			// A client may make multiple requests with a single connection
 			// but not in parallel
 			for {
-				var scenario internal.Scenario
+				var scenario Scenario
 				err = client.Recv(&scenario)
 				if err != nil {
 					log.Println(err)
@@ -40,21 +40,21 @@ func StartServer(port int) {
 	}
 }
 
-func handleRequest(scen *internal.Scenario) internal.ScenarioResult {
+func handleRequest(scen *Scenario) ScenarioResult {
 	log.Printf("recv scenario : %v", scen)
 
 	// Workaround serialization issues
-	tasks := make([]internal.Task, len(scen.Tasks))
+	tasks := make([]Task, len(scen.Tasks))
 	for i := range scen.Tasks {
-		tasks[i] = scen.Tasks[i].(internal.Task)
+		tasks[i] = scen.Tasks[i].(Task)
 	}
 
 	sequential := true
-	result := internal.ScenarioResult{Completed: make([]internal.CompletedTask, len(scen.Tasks))}
+	result := ScenarioResult{Completed: make([]CompletedTask, len(scen.Tasks))}
 
 	if sequential {
 		for i := 0; i < int(scen.NumAgents); i++ {
-			agent := internal.NewAgent(internal.Pos(0, 0), internal.Dijkstra{Diagonal: scen.DiagonalMovement})
+			agent := NewAgent(pathfinding.Pos(0, 0), pathfinding.Dijkstra{Diagonal: scen.DiagonalMovement})
 			for _, task := range tasks {
 				log.Printf("scheduling task %v on agent %v", task, agent.Id)
 				result.Completed = append(result.Completed, agent.ExecuteTask(scen.Carte, task))
@@ -62,7 +62,7 @@ func handleRequest(scen *internal.Scenario) internal.ScenarioResult {
 		}
 	} else {
 		agentWg := sync.WaitGroup{}
-		pool := internal.NewTaskPool(tasks)
+		pool := NewTaskPool(tasks)
 		for i := 0; i < int(scen.NumAgents); i++ {
 			go func() {
 				agentWg.Add(1)
@@ -70,7 +70,7 @@ func handleRequest(scen *internal.Scenario) internal.ScenarioResult {
 				defer agentWg.Done()
 
 				// Initialize a new agent for this coroutine
-				agent := internal.NewAgent(internal.Pos(0, 0), internal.Dijkstra{Diagonal: scen.DiagonalMovement})
+				agent := NewAgent(pathfinding.Pos(0, 0), pathfinding.Dijkstra{Diagonal: scen.DiagonalMovement})
 				for {
 					// Pick a task from the task pool
 					task := pool.Get()

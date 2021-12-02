@@ -1,30 +1,30 @@
-package internal
+package queue
 
-// PriorityQueue a priority queue based on a pairing heap.
+var _ PriorityQueue = (*pairingQueue)(nil)
+
+// pairingQueue a priority queue based on a pairing heap.
 // see https://en.wikipedia.org/wiki/Pairing_heap.
-type PriorityQueue struct {
-	root *node
+type pairingQueue struct {
+	root *pqnode
 }
 
-type node struct {
+type pqnode struct {
 	// No generics, thanks Go.
 	item interface{}
 	// The priority of this item
 	priority float32
-	children []*node
+	children []*pqnode
 }
 
-// push insert an item in the queue.
-func (q *PriorityQueue) push(item interface{}, priority float32) {
-	q.root = merge(q.root, &node{item: item, priority: priority})
+func (q pairingQueue) Push(item interface{}, priority float32) {
+	q.root = merge(q.root, &pqnode{item: item, priority: priority})
 }
 
-func (q *PriorityQueue) empty() bool {
+func (q pairingQueue) Empty() bool {
 	return q.root == nil
 }
 
-// pop retrieve an item from the queue
-func (q *PriorityQueue) pop() interface{} {
+func (q pairingQueue) Pop() interface{} {
 	if q.root == nil {
 		return nil
 	}
@@ -33,7 +33,7 @@ func (q *PriorityQueue) pop() interface{} {
 	return item
 }
 
-func merge(a *node, b *node) *node {
+func merge(a *pqnode, b *pqnode) *pqnode {
 	if a == nil {
 		return b
 	}
@@ -41,20 +41,20 @@ func merge(a *node, b *node) *node {
 		return a
 	}
 	if a.priority < b.priority {
-		a.children = append([]*node{b}, a.children...)
+		a.children = append([]*pqnode{b}, a.children...)
 		return a
 	} else {
-		b.children = append([]*node{a}, b.children...)
+		b.children = append([]*pqnode{a}, b.children...)
 		return b
 	}
 }
 
-func mergeChildren(root *node, heaps []*node) *node {
+func mergeChildren(root *pqnode, heaps []*pqnode) *pqnode {
 	if len(heaps) == 1 {
 		root = heaps[0]
 		return root
 	}
-	var merged *node
+	var merged *pqnode
 	for {
 		if len(heaps) == 0 {
 			break

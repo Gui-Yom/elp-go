@@ -1,38 +1,40 @@
-package internal
+package pathfinding
 
 import (
+	"elp-go/internal/queue"
 	"time"
 )
 
-type Astar struct {
-	diagonal  bool
-	heuristic Heuristic
+type Dijkstra struct {
+	Diagonal bool
 }
 
-var _ Pathfinder = (*Astar)(nil)
+// Implementation is implicit, thanks Go
+var _ Pathfinder = (*Dijkstra)(nil)
 
-func (astar Astar) FindPath(carte *Carte, start Position, goal Position) ([]Position, Stats) {
+func (dijk Dijkstra) FindPath(carte *Carte, start Position, goal Position) ([]Position, Stats) {
 	startTime := time.Now()
 
 	costs := make(map[Position]float32)
 	costs[start] = 0
 
-	frontier := PriorityQueue{}
-	frontier.push(start, 0)
+	frontier := queue.NewNaive()
+	frontier.Push(start, 0)
 	parentChain := make(map[Position]Position)
 
 	var iter uint
 	var curr Position
 
-	for !frontier.empty() {
-		iter++
-		curr = frontier.pop().(Position)
+	for !frontier.Empty() {
+		curr = frontier.Pop().(Position)
 
 		if curr == goal {
 			break
 		}
 
-		neighbors := carte.GetNeighbors(curr, astar.diagonal)
+		iter++
+
+		neighbors := carte.GetNeighbors(curr, dijk.Diagonal)
 		for _, node := range neighbors {
 			tileCost := carte.GetTile(node).Cost
 			newCost := costs[curr] + tileCost
@@ -40,7 +42,7 @@ func (astar Astar) FindPath(carte *Carte, start Position, goal Position) ([]Posi
 			if !exists || newCost < prevCost {
 				costs[node] = newCost
 				parentChain[node] = curr
-				frontier.push(node, newCost+astar.heuristic(node, goal))
+				frontier.Push(node, newCost)
 			}
 		}
 	}

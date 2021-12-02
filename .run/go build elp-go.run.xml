@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="go build elp-go" type="GoApplicationRunConfiguration" factoryName="Go Application" activateToolWindowBeforeRun="false" nameIsGenerated="true">
+  <configuration default="false" name="Build" type="GoApplicationRunConfiguration" factoryName="Go Application" activateToolWindowBeforeRun="false">
     <module name="elp-go" />
     <working_directory value="$PROJECT_DIR$" />
     <go_parameters value="-o target/elp-go.exe" />

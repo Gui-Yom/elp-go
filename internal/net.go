@@ -1,8 +1,7 @@
-package main
+package internal
 
 import (
 	"bufio"
-	"elp-go/internal"
 	"github.com/fxamacker/cbor/v2"
 	"net"
 	"reflect"
@@ -17,7 +16,7 @@ type Remote struct {
 
 func NewRemote(conn *net.TCPConn) *Remote {
 	tags := cbor.NewTagSet()
-	tags.Add(cbor.TagOptions{EncTag: cbor.EncTagRequired, DecTag: cbor.DecTagRequired}, reflect.TypeOf(internal.MoveTask{}), 279)
+	tags.Add(cbor.TagOptions{EncTag: cbor.EncTagRequired, DecTag: cbor.DecTagRequired}, reflect.TypeOf(MoveTask{}), 279)
 	encMode, _ := cbor.PreferredUnsortedEncOptions().EncModeWithTags(tags)
 	decMode, _ := cbor.DecOptions{}.DecModeWithTags(tags)
 

@@ -1,8 +1,8 @@
-package main
+package internal
 
 import (
 	"bufio"
-	"elp-go/internal"
+	"elp-go/internal/pathfinding"
 	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -27,7 +27,7 @@ func getInput(prompt string, r *bufio.Reader) (string, error) {
 	return strings.TrimSpace(input), err
 }
 
-func fillMyList(l []internal.Task) {
+func fillMyList(l []Task) {
 	reader := bufio.NewReader(os.Stdin)
 	opt, _ := getInput("Choose option (a -add a task, -s save the list): ", reader)
 
@@ -43,58 +43,64 @@ func fillMyList(l []internal.Task) {
 	}
 }
 
+func mapFromArgs(args []string) *pathfinding.Carte {
+	parseError := func(value, name, type_ string) {
+		fmt.Printf("Can't parse %v '%v' as a valid %v", name, value, type_)
+		os.Exit(-1)
+	}
+
+	var carte *pathfinding.Carte
+	argsLen := len(args)
+	// Parsing des arguments de création de map
+	if argsLen == 0 || args[0] == "rand" {
+		var width int = 16
+		if argsLen >= 2 {
+			if num, err := strconv.ParseInt(args[1], 10, 32); err == nil {
+				width = int(num)
+			} else {
+				parseError(args[1], "width", "int")
+			}
+		}
+		var height int = 16
+		if argsLen >= 3 {
+			if num, err := strconv.ParseInt(args[2], 10, 32); err == nil {
+				height = int(num)
+			} else {
+				parseError(args[2], "height", "int")
+			}
+		}
+		var fill float32 = 0.2
+		if argsLen >= 4 {
+			if num, err := strconv.ParseFloat(args[3], 32); err == nil {
+				fill = float32(num)
+			} else {
+				parseError(args[3], "fill", "float")
+			}
+		}
+		var seed int64 = 42
+		if argsLen >= 5 {
+			if num, err := strconv.ParseInt(args[4], 10, 64); err == nil {
+				seed = num
+			} else {
+				parseError(args[4], "seed", "int")
+			}
+		}
+		carte = pathfinding.NewMapRandom(width, height, fill, seed)
+	} else {
+		carte = pathfinding.NewMapFromFile(args[0])
+	}
+	return carte
+}
+
 // StartClient Main func when running a client
 func StartClient(addr string, port int, gui bool, mapArgs []string) {
 
 	//myListTasks := []internal.Task{}
 	//fillMyList(myListTasks)
 
-	parseError := func(value, name, type_ string) {
-		fmt.Printf("Can't parse %v '%v' as a valid %v", name, value, type_)
-		os.Exit(-1)
-	}
-
-	var carte *internal.Carte
-	// Parsing des arguments de création de map
-	if len(mapArgs) == 0 || mapArgs[0] == "rand" {
-		var width int = 16
-		if len(mapArgs) >= 2 {
-			if num, err := strconv.ParseInt(mapArgs[1], 10, 32); err == nil {
-				width = int(num)
-			} else {
-				parseError(mapArgs[1], "width", "int")
-			}
-		}
-		var height int = 16
-		if len(mapArgs) >= 3 {
-			if num, err := strconv.ParseInt(mapArgs[2], 10, 32); err == nil {
-				height = int(num)
-			} else {
-				parseError(mapArgs[2], "height", "int")
-			}
-		}
-		var fill float32 = 0.2
-		if len(mapArgs) >= 4 {
-			if num, err := strconv.ParseFloat(mapArgs[3], 32); err == nil {
-				fill = float32(num)
-			} else {
-				parseError(mapArgs[3], "fill", "float")
-			}
-		}
-		var seed int64 = 42
-		if len(mapArgs) >= 5 {
-			if num, err := strconv.ParseInt(mapArgs[4], 10, 64); err == nil {
-				seed = num
-			} else {
-				parseError(mapArgs[4], "seed", "int")
-			}
-		}
-		carte = internal.NewMapRandom(width, height, fill, seed)
-	} else {
-		carte = internal.NewMapFromFile(mapArgs[0])
-	}
-	tasks := []interface{}{internal.MoveTask{Goal: internal.Pos(16, 16)}}
-	scen := internal.Scenario{Carte: carte, DiagonalMovement: true, NumAgents: 1, Tasks: tasks}
+	carte := mapFromArgs(mapArgs)
+	tasks := []interface{}{MoveTask{Goal: pathfinding.Pos(16, 16)}}
+	scen := Scenario{Carte: carte, DiagonalMovement: true, NumAgents: 1, Tasks: tasks}
 
 	wait := sync.Mutex{}
 	wait.Lock()
@@ -113,7 +119,7 @@ func StartClient(addr string, port int, gui bool, mapArgs []string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		var result internal.ScenarioResult
+		var result ScenarioResult
 		if err := client.Recv(&result); err != nil {
 			log.Fatal(err)
 		}
@@ -127,7 +133,8 @@ func StartClient(addr string, port int, gui bool, mapArgs []string) {
 	wait.Lock()
 }
 
-func showScenario(scen *internal.Scenario) {
+// showScenario Display the given scenario in a window
+func showScenario(scen *Scenario) {
 	a := app.NewWithID("marais.elp-go")
 	//a.SetIcon(theme.SearchIcon())
 	w := a.NewWindow("Map display")
@@ -136,17 +143,17 @@ func showScenario(scen *internal.Scenario) {
 
 	carte := scen.Carte
 
-	canvas := container.NewMax(canvas.NewRaster(func(w, h int) image.Image {
+	content := container.NewMax(canvas.NewRaster(func(w, h int) image.Image {
 		ctx := gg.NewContext(w, h)
 		tileWidth := float64(w) / float64(carte.Width)
 		tileHeigth := float64(h) / float64(carte.Height)
 		for j := 0; j < carte.Height; j++ {
 			for i := 0; i < carte.Width; i++ {
 				ctx.DrawRectangle(float64(i)*tileWidth, float64(j)*tileHeigth, tileWidth, tileHeigth)
-				switch carte.GetTile(internal.Pos(i, j)) {
-				case internal.TILE_EMPTY:
+				switch carte.GetTile(pathfinding.Pos(i, j)) {
+				case pathfinding.TILE_EMPTY:
 					ctx.SetColor(color.White)
-				case internal.TILE_WALL:
+				case pathfinding.TILE_WALL:
 					ctx.SetRGB(0.0, 0.0, 0.0)
 				default:
 					ctx.SetRGB(1.0, 0.0, 0.0)
@@ -159,7 +166,7 @@ func showScenario(scen *internal.Scenario) {
 		return ctx.Image()
 	}))
 
-	w.SetContent(canvas)
+	w.SetContent(content)
 
 	w.Resize(fyne.NewSize(720, 720))
 	w.ShowAndRun()
