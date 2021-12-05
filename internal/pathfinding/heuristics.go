@@ -11,7 +11,11 @@ func Manhattan(p Position, goal Position) float32 {
 }
 
 func Euclidean(p Position, goal Position) float32 {
+	return float32(math.Sqrt(float64(EuclideanSq(p, goal))))
+}
+
+func EuclideanSq(p Position, goal Position) float32 {
 	dx := math.Abs(float64(p.X - goal.X))
 	dy := math.Abs(float64(p.Y - goal.Y))
-	return float32(math.Sqrt(dx*dx + dy*dy))
+	return float32(dx*dx + dy*dy)
 }

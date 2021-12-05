@@ -6,8 +6,9 @@ import (
 )
 
 type Astar struct {
-	diagonal  bool
-	heuristic Heuristic
+	Diagonal     bool
+	Heuristic    Heuristic
+	queueBuilder func() queue.PriorityQueue
 }
 
 var _ Pathfinder = (*Astar)(nil)
@@ -18,7 +19,7 @@ func (astar Astar) FindPath(carte *Carte, start Position, goal Position) ([]Posi
 	costs := make(map[Position]float32)
 	costs[start] = 0
 
-	frontier := queue.NewPairing()
+	frontier := astar.queueBuilder()
 	frontier.Push(start, 0)
 	parentChain := make(map[Position]Position)
 
@@ -33,7 +34,7 @@ func (astar Astar) FindPath(carte *Carte, start Position, goal Position) ([]Posi
 			break
 		}
 
-		neighbors := carte.GetNeighbors(curr, astar.diagonal)
+		neighbors := carte.GetNeighbors(curr, astar.Diagonal)
 		for _, node := range neighbors {
 			tileCost := carte.GetTile(node).Cost
 			newCost := costs[curr] + tileCost
@@ -41,7 +42,7 @@ func (astar Astar) FindPath(carte *Carte, start Position, goal Position) ([]Posi
 			if !exists || newCost < prevCost {
 				costs[node] = newCost
 				parentChain[node] = curr
-				frontier.Push(node, newCost+astar.heuristic(node, goal))
+				frontier.Push(node, newCost+astar.Heuristic(node, goal))
 			}
 		}
 	}

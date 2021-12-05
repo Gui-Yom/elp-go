@@ -6,7 +6,8 @@ import (
 )
 
 type Dijkstra struct {
-	Diagonal bool
+	Diagonal     bool
+	queueBuilder func() queue.PriorityQueue
 }
 
 // Implementation is implicit, thanks Go
@@ -18,7 +19,7 @@ func (dijk Dijkstra) FindPath(carte *Carte, start Position, goal Position) ([]Po
 	costs := make(map[Position]float32)
 	costs[start] = 0
 
-	frontier := queue.NewNaive()
+	frontier := dijk.queueBuilder()
 	frontier.Push(start, 0)
 	parentChain := make(map[Position]Position)
 

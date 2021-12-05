@@ -17,7 +17,7 @@ func NewPairing() PriorityQueue {
 	return &pairingQueue{}
 }
 
-// NewNaive Creates a new priority queue based a naive sorted list insert.
-func NewNaive() PriorityQueue {
-	return naiveQueue{items: list.New()}
+// NewLinked Creates a new priority queue based a sorted linked list insert.
+func NewLinked() PriorityQueue {
+	return linkedQueue{items: list.New()}
 }

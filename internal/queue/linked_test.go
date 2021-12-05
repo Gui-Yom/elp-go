@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestNaiveSimple(t *testing.T) {
-	queue := NewNaive()
+func TestLinkedSimple(t *testing.T) {
+	queue := NewLinked()
 	queue.Push("second", 2)
 	queue.Push("first", 0)
 	queue.Push("third", 5)

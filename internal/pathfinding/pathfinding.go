@@ -1,12 +1,21 @@
 package pathfinding
 
 import (
+	"elp-go/internal/queue"
 	"fmt"
 	"time"
 )
 
 type Pathfinder interface {
 	FindPath(carte *Carte, start Position, goal Position) ([]Position, Stats)
+}
+
+func NewDijkstra(diagonal bool, queueBuilder func() queue.PriorityQueue) Pathfinder {
+	return Dijkstra{Diagonal: diagonal, queueBuilder: queueBuilder}
+}
+
+func NewAstar(diagonal bool, heuristic Heuristic, queueBuilder func() queue.PriorityQueue) Pathfinder {
+	return Astar{Diagonal: diagonal, Heuristic: heuristic, queueBuilder: queueBuilder}
 }
 
 type Stats struct {
