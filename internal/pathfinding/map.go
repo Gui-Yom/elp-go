@@ -167,6 +167,14 @@ func NewMapRandom(width int, height int, fill float32, seed int64) *Carte {
 	return &Carte{Width: width, Height: height, Inner: inner}
 }
 
+func NewMapEmpty(width, height int) *Carte {
+	inner := make([]uint8, width*height)
+	for i := range inner {
+		inner[i] = ' '
+	}
+	return &Carte{Width: width, Height: height, Inner: inner}
+}
+
 func (c Carte) String() string {
 	var s = fmt.Sprintf("%vx%v\n", c.Width, c.Height)
 	for j := 0; j < c.Height; j++ {

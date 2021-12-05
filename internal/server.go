@@ -2,9 +2,11 @@ package internal
 
 import (
 	"elp-go/internal/pathfinding"
+	"elp-go/internal/queue"
 	"log"
 	"net"
 	"sync"
+	"sync/atomic"
 )
 
 // StartServer Main func when running a server
@@ -32,7 +34,7 @@ func StartServer(port int) {
 					//log.Fatal(err)
 					break
 				}
-				result := handleRequest(&scenario)
+				result := handleRequestSeq(&scenario, pathfinding.NewDijkstra(true, queue.NewLinked))
 				log.Printf("sending result : %v", result)
 				client.Send(result)
 			}
@@ -40,51 +42,66 @@ func StartServer(port int) {
 	}
 }
 
-func handleRequest(scen *Scenario) ScenarioResult {
-	log.Printf("recv scenario : %v", scen)
+type RequestHandler func(scenario *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult
 
-	// Workaround serialization issues
-	tasks := make([]Task, len(scen.Tasks))
-	for i := range scen.Tasks {
-		tasks[i] = scen.Tasks[i].(Task)
-	}
-
-	sequential := true
+func handleRequestSeq(scen *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult {
 	result := ScenarioResult{Completed: make([]CompletedTask, len(scen.Tasks))}
 
-	if sequential {
-		for i := 0; i < int(scen.NumAgents); i++ {
-			agent := NewAgent(pathfinding.Pos(0, 0), pathfinding.Dijkstra{Diagonal: scen.DiagonalMovement})
-			for _, task := range tasks {
-				log.Printf("scheduling task %v on agent %v", task, agent.Id)
-				result.Completed = append(result.Completed, agent.ExecuteTask(scen.Carte, task))
-			}
-		}
-	} else {
-		agentWg := sync.WaitGroup{}
-		pool := NewTaskPool(tasks)
-		for i := 0; i < int(scen.NumAgents); i++ {
-			go func() {
-				agentWg.Add(1)
-				// Release the lock
-				defer agentWg.Done()
+	var idCounter uint32
 
-				// Initialize a new agent for this coroutine
-				agent := NewAgent(pathfinding.Pos(0, 0), pathfinding.Dijkstra{Diagonal: scen.DiagonalMovement})
-				for {
-					// Pick a task from the task pool
-					task := pool.Get()
-					// If no task is available, we just quit
-					if task == nil {
-						break
-					}
-					log.Printf("scheduling task %v on agent %v", task, agent.Id)
-					result.Completed = append(result.Completed, agent.ExecuteTask(scen.Carte, task))
-				}
-			}()
+	for i := 0; i < int(scen.NumAgents); i++ {
+		agent := NewAgent(idCounter, pathfinding.Pos(0, 0), pathfinder)
+		idCounter++
+		for j, task := range scen.Tasks {
+			task := task.(Task)
+			log.Printf("scheduling task %#v on agent %v", task, agent.Id)
+			result.Completed[j] = agent.ExecuteTask(scen.Carte, task)
 		}
-		// Wait for all locks
-		agentWg.Wait()
 	}
 	return result
+}
+
+func handleRequestPar(scen *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult {
+	// WaitGroup for all computing goroutines
+	agentWg := sync.WaitGroup{}
+
+	// Tasks to be computed, single producer/multi consumers
+	tasks := make(chan Task)
+	// Task results, multi producers/single consumer
+	completed := make(chan CompletedTask, 10)
+
+	var idCounter uint32
+
+	for i := 0; i < int(scen.NumAgents); i++ {
+		go func() {
+			agentWg.Add(1)
+			// Release the lock
+			defer agentWg.Done()
+
+			// Initialize a new agent for this coroutine
+			agent := NewAgent(atomic.AddUint32(&idCounter, 1), pathfinding.Pos(0, 0), pathfinder)
+			for t := range tasks {
+				log.Printf("scheduling task %#v on agent %v", t, agent.Id)
+				completed <- agent.ExecuteTask(scen.Carte, t)
+			}
+		}()
+	}
+	go func() {
+		for _, t := range scen.Tasks {
+			tasks <- t.(Task)
+		}
+		close(tasks)
+
+		// Wait for all goroutines to close the output channel
+		agentWg.Wait()
+		close(completed)
+	}()
+
+	compTasks := make([]CompletedTask, len(scen.Tasks))
+	i := 0
+	for c := range completed {
+		compTasks[i] = c
+		i++
+	}
+	return ScenarioResult{Completed: compTasks}
 }

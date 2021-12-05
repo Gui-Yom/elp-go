@@ -4,11 +4,7 @@ import (
 	"elp-go/internal/pathfinding"
 	"fmt"
 	"log"
-	"sync/atomic"
 )
-
-// Warning ! Use atomic operations
-var idCounter uint32
 
 type Agent struct {
 	Id         uint32
@@ -16,8 +12,8 @@ type Agent struct {
 	pathfinder pathfinding.Pathfinder
 }
 
-func NewAgent(pos pathfinding.Position, pathfinder pathfinding.Pathfinder) Agent {
-	return Agent{Id: atomic.AddUint32(&idCounter, 1), Pos: pos, pathfinder: pathfinder}
+func NewAgent(id uint32, pos pathfinding.Position, pathfinder pathfinding.Pathfinder) Agent {
+	return Agent{Id: id, Pos: pos, pathfinder: pathfinder}
 }
 
 func (a Agent) ExecuteTask(carte *pathfinding.Carte, task Task) CompletedTask {

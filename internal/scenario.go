@@ -1,6 +1,9 @@
 package internal
 
-import "elp-go/internal/pathfinding"
+import (
+	"elp-go/internal/pathfinding"
+	"fmt"
+)
 
 type Scenario struct {
 	Carte            *pathfinding.Carte
@@ -16,6 +19,14 @@ type CompletedTask struct {
 
 type ScenarioResult struct {
 	Completed []CompletedTask
+}
+
+func (res ScenarioResult) String() string {
+	s := "ScenarioResult\n  Tasks:\n"
+	for _, t := range res.Completed {
+		s = fmt.Sprintf("%s    %v -> %v\n", s, t.AgentId, t.Path)
+	}
+	return s
 }
 
 type Task interface {
