@@ -7,6 +7,16 @@ import (
 	"reflect"
 )
 
+var tags = cbor.NewTagSet()
+var encMode cbor.EncMode
+var decMode cbor.DecMode
+
+func init() {
+	tags.Add(cbor.TagOptions{EncTag: cbor.EncTagRequired, DecTag: cbor.DecTagRequired}, reflect.TypeOf(MoveTask{}), 279)
+	encMode, _ = cbor.PreferredUnsortedEncOptions().EncModeWithTags(tags)
+	decMode, _ = cbor.DecOptions{}.DecModeWithTags(tags)
+}
+
 type Remote struct {
 	conn    *net.TCPConn
 	bufw    *bufio.Writer
@@ -15,11 +25,6 @@ type Remote struct {
 }
 
 func NewRemote(conn *net.TCPConn) *Remote {
-	tags := cbor.NewTagSet()
-	tags.Add(cbor.TagOptions{EncTag: cbor.EncTagRequired, DecTag: cbor.DecTagRequired}, reflect.TypeOf(MoveTask{}), 279)
-	encMode, _ := cbor.PreferredUnsortedEncOptions().EncModeWithTags(tags)
-	decMode, _ := cbor.DecOptions{}.DecModeWithTags(tags)
-
 	// Buffer sizes are arbitrary
 	bufw := bufio.NewWriterSize(conn, 4096)
 	return &Remote{
