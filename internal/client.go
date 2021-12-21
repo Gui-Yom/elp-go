@@ -4,12 +4,10 @@ import (
 	"bufio"
 	"elp-go/internal/pathfinding"
 	"fmt"
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/container"
-	"github.com/fogleman/gg"
-	"image"
+	"gioui.org/app"
+	"gioui.org/io/system"
+	"gioui.org/unit"
+	"github.com/ajstarks/giocanvas"
 	"image/color"
 	"log"
 	"net"
@@ -135,39 +133,44 @@ func StartClient(addr string, port int, gui bool, mapArgs []string) {
 
 // showScenario Display the given scenario in a window
 func showScenario(scen *Scenario) {
-	a := app.NewWithID("marais.elp-go")
-	//a.SetIcon(theme.SearchIcon())
-	w := a.NewWindow("Map display")
-	w.SetPadded(false)
-	w.SetMaster()
+	window := app.NewWindow(app.Title("elp-go"), app.Size(unit.Px(720), unit.Px(720)))
 
 	carte := scen.Carte
+	canvas := giocanvas.NewCanvas(720, 720, system.FrameEvent{})
 
-	content := container.NewMax(canvas.NewRaster(func(w, h int) image.Image {
-		ctx := gg.NewContext(w, h)
-		tileWidth := float64(w) / float64(carte.Width)
-		tileHeigth := float64(h) / float64(carte.Height)
-		for j := 0; j < carte.Height; j++ {
-			for i := 0; i < carte.Width; i++ {
-				ctx.DrawRectangle(float64(i)*tileWidth, float64(j)*tileHeigth, tileWidth, tileHeigth)
-				switch carte.GetTile(pathfinding.Pos(i, j)) {
-				case pathfinding.TILE_EMPTY:
-					ctx.SetColor(color.White)
-				case pathfinding.TILE_WALL:
-					ctx.SetRGB(0.0, 0.0, 0.0)
-				default:
-					ctx.SetRGB(1.0, 0.0, 0.0)
+	black := giocanvas.ColorLookup("black")
+	white := giocanvas.ColorLookup("white")
+	red := giocanvas.ColorLookup("red")
+
+	for e := range window.Events() {
+		switch e := e.(type) {
+		case system.DestroyEvent:
+			// The window was closed.
+			return
+		case system.FrameEvent:
+			canvas.Background(white)
+			canvas.Text(50, 50, 13, "Hello there !", black)
+
+			tileWidth := float32(720) / float32(carte.Width)
+			tileHeigth := float32(720) / float32(carte.Height)
+			for j := 0; j < carte.Height; j++ {
+				for i := 0; i < carte.Width; i++ {
+					var color color.NRGBA
+					switch carte.GetTile(pathfinding.Pos(i, j)) {
+					case pathfinding.TILE_EMPTY:
+						color = white
+					case pathfinding.TILE_WALL:
+						color = black
+					default:
+						color = red
+					}
+					canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, color)
 				}
-				ctx.Fill()
 			}
+			canvas.Text(5, 710, 11, fmt.Sprintf("N: %v, Diagonal: %v", scen.NumAgents, scen.DiagonalMovement), black)
+
+			// Update the display.
+			e.Frame(canvas.Context.Ops)
 		}
-		ctx.SetRGB(0.0, 0.0, 1.0)
-		ctx.DrawString(fmt.Sprintf("N: %v, Diagonal: %v", scen.NumAgents, scen.DiagonalMovement), 5, float64(h-10))
-		return ctx.Image()
-	}))
-
-	w.SetContent(content)
-
-	w.Resize(fyne.NewSize(720, 720))
-	w.ShowAndRun()
+	}
 }
