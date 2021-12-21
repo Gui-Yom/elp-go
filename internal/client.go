@@ -5,6 +5,7 @@ import (
 	"elp-go/internal/pathfinding"
 	"fmt"
 	"gioui.org/app"
+	"gioui.org/io/pointer"
 	"gioui.org/io/system"
 	"gioui.org/unit"
 	"github.com/ajstarks/giocanvas"
@@ -91,7 +92,7 @@ func mapFromArgs(args []string) *pathfinding.Carte {
 }
 
 // StartClient Main func when running a client
-func StartClient(addr string, port int, gui bool, mapArgs []string) {
+func StartClient(addr net.IP, port int, gui bool, connect bool, mapArgs []string) {
 
 	//myListTasks := []internal.Task{}
 	//fillMyList(myListTasks)
@@ -101,28 +102,30 @@ func StartClient(addr string, port int, gui bool, mapArgs []string) {
 	scen := Scenario{Carte: carte, DiagonalMovement: true, NumAgents: 1, Tasks: tasks}
 
 	wait := sync.Mutex{}
-	wait.Lock()
-	go func() {
-		defer wait.Unlock()
+	if connect {
+		wait.Lock()
+		go func() {
+			defer wait.Unlock()
 
-		conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: net.ParseIP(addr), Port: port})
-		if err != nil {
-			log.Fatal(err)
-		}
+			conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: addr, Port: port})
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		client := NewRemote(conn)
-		defer client.Close()
+			client := NewRemote(conn)
+			defer client.Close()
 
-		err = client.Send(&scen)
-		if err != nil {
-			log.Fatal(err)
-		}
-		var result ScenarioResult
-		if err := client.Recv(&result); err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("result : %v", result)
-	}()
+			err = client.Send(&scen)
+			if err != nil {
+				log.Fatal(err)
+			}
+			var result ScenarioResult
+			if err := client.Recv(&result); err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("result : %v", result)
+		}()
+	}
 
 	if gui {
 		showScenario(&scen)
@@ -142,12 +145,31 @@ func showScenario(scen *Scenario) {
 	white := giocanvas.ColorLookup("white")
 	red := giocanvas.ColorLookup("red")
 
+	inputTag := new(bool)
+
 	for e := range window.Events() {
 		switch e := e.(type) {
 		case system.DestroyEvent:
 			// The window was closed.
 			return
 		case system.FrameEvent:
+
+			// Process events that arrived between the last frame and this one.
+			for _, ev := range e.Queue.Events(inputTag) {
+				if x, ok := ev.(pointer.Event); ok {
+					switch x.Type {
+					case pointer.Press:
+					case pointer.Release:
+					}
+				}
+			}
+
+			// Interested in pointer events
+			pointer.InputOp{
+				Tag:   inputTag,
+				Types: pointer.Press | pointer.Release,
+			}.Add(canvas.Context.Ops)
+
 			canvas.Background(white)
 			canvas.Text(50, 50, 13, "Hello there !", black)
 
@@ -167,7 +189,7 @@ func showScenario(scen *Scenario) {
 					canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, color)
 				}
 			}
-			canvas.Text(5, 710, 11, fmt.Sprintf("N: %v, Diagonal: %v", scen.NumAgents, scen.DiagonalMovement), black)
+			canvas.Text(0.01, 0.95, 0.5, fmt.Sprintf("N: %v, Diagonal: %v", scen.NumAgents, scen.DiagonalMovement), black)
 
 			// Update the display.
 			e.Frame(canvas.Context.Ops)
