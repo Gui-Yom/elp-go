@@ -44,7 +44,7 @@ func StartServer(port int) {
 
 type RequestHandler func(scenario *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult
 
-func handleRequestSeq(scen *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult {
+func handleRequestSeq(scen *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult { //test sans goroutine
 	result := ScenarioResult{Completed: make([]CompletedTask, len(scen.Tasks))}
 
 	var idCounter uint32
@@ -61,7 +61,7 @@ func handleRequestSeq(scen *Scenario, pathfinder pathfinding.Pathfinder) Scenari
 	return result
 }
 
-func handleRequestPar(scen *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult {
+func handleRequestPar(scen *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult { //test avec goroutine
 	// WaitGroup for all computing goroutines
 	agentWg := sync.WaitGroup{}
 

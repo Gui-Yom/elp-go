@@ -114,3 +114,13 @@ Serveur (pour chaque client) :
 ## Références
 
 https://doi.org/10.1137/1.9781611973198.7
+
+## A faire
+- faire le benchmark pour goroutine/ sans goroutine
+- ajouter des tâches
+- faire l'agrégation des stats dans agent.go
+- récupérer les chemins pour l'interface graphique
+- simulation : que les agents se déplacent
+- le temps! (simulé peut-être)
+- attribuer les tâches en fonction de si les petits bonhommes sont à côté ou pas
+- gérer les collisions ?
