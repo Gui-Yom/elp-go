@@ -66,11 +66,11 @@ Serveur (pour chaque client):
     * `astar.go`: Implémentation de A*
     * `dijkstra.go`: Implémentation de Dijkstra
     * `heuristics.go`: Implémentations de différentes fonctions heuristiques pour A*
+    * `map.go`: Cartes et tiles
     * `pathfinding.go`: Interfaces et utilités
     * `queue.go`: Implémentation d'une priority queue
 - `scenario/`: Structures et définitions des agents, tâches, cartes, scénarios
     * `agent.go`: Agents
-    * `map.go`: Cartes et tiles
     * `scenario.go`: Scenario et tâches
 
 ## Références
