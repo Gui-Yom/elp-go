@@ -5,11 +5,12 @@ import (
 	"elp-go/internal/pathfinding"
 	"fmt"
 	"gioui.org/app"
+	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/io/system"
 	"gioui.org/unit"
 	"github.com/ajstarks/giocanvas"
-	"image/color"
+	"image"
 	"log"
 	"net"
 	"os"
@@ -147,6 +148,9 @@ func showScenario(scen *Scenario) {
 
 	inputTag := new(bool)
 
+	size := image.Pt(720, 720)
+	var mousePos f32.Point
+
 	for e := range window.Events() {
 		switch e := e.(type) {
 		case system.DestroyEvent:
@@ -154,12 +158,17 @@ func showScenario(scen *Scenario) {
 			return
 		case system.FrameEvent:
 
+			if size != e.Size {
+				size = e.Size
+				canvas = giocanvas.NewCanvas(float32(size.X), float32(size.Y), e)
+			}
+
 			// Process events that arrived between the last frame and this one.
 			for _, ev := range e.Queue.Events(inputTag) {
 				if x, ok := ev.(pointer.Event); ok {
 					switch x.Type {
-					case pointer.Press:
-					case pointer.Release:
+					case pointer.Move:
+						mousePos = x.Position
 					}
 				}
 			}
@@ -167,29 +176,25 @@ func showScenario(scen *Scenario) {
 			// Interested in pointer events
 			pointer.InputOp{
 				Tag:   inputTag,
-				Types: pointer.Press | pointer.Release,
+				Types: pointer.Move,
 			}.Add(canvas.Context.Ops)
 
 			canvas.Background(white)
-			canvas.Text(50, 50, 13, "Hello there !", black)
 
-			tileWidth := float32(720) / float32(carte.Width)
-			tileHeigth := float32(720) / float32(carte.Height)
+			tileWidth := float32(size.X) / float32(carte.Width)
+			tileHeigth := float32(size.Y) / float32(carte.Height)
 			for j := 0; j < carte.Height; j++ {
 				for i := 0; i < carte.Width; i++ {
-					var color color.NRGBA
 					switch carte.GetTile(pathfinding.Pos(i, j)) {
 					case pathfinding.TILE_EMPTY:
-						color = white
 					case pathfinding.TILE_WALL:
-						color = black
+						canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, black)
 					default:
-						color = red
+						canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, red)
 					}
-					canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, color)
 				}
 			}
-			canvas.Text(0.01, 0.95, 0.5, fmt.Sprintf("N: %v, Diagonal: %v", scen.NumAgents, scen.DiagonalMovement), black)
+			canvas.AbsText(1, float32(size.Y-20), 13, fmt.Sprintf("N: %v, Diagonal: %v, mouse %v", scen.NumAgents, scen.DiagonalMovement, mousePos), black)
 
 			// Update the display.
 			e.Frame(canvas.Context.Ops)

@@ -1,14 +1,14 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Build" type="GoApplicationRunConfiguration" factoryName="Go Application" activateToolWindowBeforeRun="false">
+  <configuration default="false" name="Run" type="GoApplicationRunConfiguration" factoryName="Go Application" activateToolWindowBeforeRun="false">
     <module name="elp-go" />
     <working_directory value="$PROJECT_DIR$" />
     <go_parameters value="-o target/elp-go.exe" />
+    <parameters value="-noconnect map0.map" />
     <kind value="PACKAGE" />
     <package value="elp-go" />
     <directory value="$PROJECT_DIR$" />
     <filePath value="$PROJECT_DIR$" />
     <output_directory value="$PROJECT_DIR$/target" />
-    <option name="run" value="false" />
     <method v="2" />
   </configuration>
 </component>
