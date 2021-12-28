@@ -11,11 +11,13 @@ import (
 
 // StartServer Main func when running a server
 func StartServer(port int) {
+	// listen on the port port
 	server, err := net.ListenTCP("tcp", &net.TCPAddr{Port: port})
 	if err != nil {
 		log.Fatal(err)
 	}
 	for {
+		// we accept the incoming connexions on the port port
 		conn, err := server.AcceptTCP()
 		if err != nil {
 			log.Fatal(err)
@@ -45,7 +47,7 @@ func StartServer(port int) {
 type RequestHandler func(scenario *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult
 
 func handleRequestSeq(scen *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult { //test sans goroutine
-	result := ScenarioResult{Completed: make([]CompletedTask, len(scen.Tasks))}
+	result := ScenarioResult{Completed: make([]CompletedTask, len(scen.Tasks))} //make([]CompletedTask, len(scen.Tasks)) : creation of a tab with a length = scen.Tasks
 
 	var idCounter uint32
 
