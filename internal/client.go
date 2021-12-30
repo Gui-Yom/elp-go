@@ -43,13 +43,13 @@ func fillMyList(l []Task) {
 	}
 }
 
-func mapFromArgs(args []string) *pathfinding.Carte {
+func mapFromArgs(args []string) *pathfinding.World {
 	parseError := func(value, name, type_ string) {
 		fmt.Printf("Can't parse %v '%v' as a valid %v", name, value, type_)
 		os.Exit(-1)
 	}
 
-	var carte *pathfinding.Carte
+	var carte *pathfinding.World
 	argsLen := len(args)
 	// Parsing des arguments de création de map
 	if argsLen == 0 || args[0] == "rand" {

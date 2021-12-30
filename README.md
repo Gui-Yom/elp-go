@@ -1,21 +1,5 @@
 # elp-go
 
-## Build
-
-Sur Windows :
-
-```shell
-> build.bat
-```
-
-Sur Unix :
-
-```shell
-$ ./build.sh
-```
-
-Exécutable : `target/elp-go`
-
 ## Git
 
 Pour récupérer le repo :
@@ -38,9 +22,23 @@ git commit -m "<message>"
 git push origin
 ```
 
-## Détails
+## Build
 
-### CLI
+Sur Windows :
+
+```shell
+> build.bat
+```
+
+Sur Unix :
+
+```shell
+$ ./build.sh
+```
+
+Exécutable : `target/elp-go`
+
+## CLI
 
 `$ elp-go -h`
 
@@ -64,6 +62,40 @@ Example usage :
   Start a client with a randomly generated map :
     $ elp-go rand 100 100 0.1 42
 ```
+
+## Tests
+
+CLI `go test` : https://pkg.go.dev/cmd/go#hdr-Testing_flags
+
+```shell
+$ go test -c -o target/test.<name> <package>
+$ target/test.<name> -test.v
+```
+
+## Benchmarks
+
+```shell
+$ go test -c -o target/bench.pathfinding.exe elp-go/internal/pathfinding
+$ target/bench.pathfinding -test.v -test.paniconexit0 -test.bench . -test.run ^$ -test.benchtime 5s -test.benchmem
+```
+
+### Profilage
+
+Il est nécessaire de limiter les benchmarks pour chaque séquence de profilage. CPU :
+
+```shell
+$ target/bench.pathfinding -test.v -test.paniconexit0 -test.bench <spec> -test.run ^$ -test.benchtime 10s -test.outputdir target -test.cpuprofile pathfinding.<spec>.cpu.prof
+```
+
+Mémoire :
+
+```shell
+$ target/bench.pathfinding -test.v -test.paniconexit0 -test.bench <spec> -test.run ^$ -test.benchtime 10s -test.benchmem -test.outputdir target -test.memprofile pathfinding.<spec>.mem.prof
+```
+
+Lecture des données de profilage avec pprof. Interface web interactive avec `pprof -http : cpu.prof`
+
+## Détails
 
 ### Organisation du code
 
@@ -116,6 +148,7 @@ Serveur (pour chaque client) :
 https://doi.org/10.1137/1.9781611973198.7
 
 ## A faire
+
 - faire le benchmark pour goroutine/ sans goroutine
 - ajouter des tâches
 - faire l'agrégation des stats dans agent.go

@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+// Position A position in the discrete 2D world
 type Position struct {
 	X int
 	Y int
@@ -28,6 +29,8 @@ func (p Position) String() string {
 	return fmt.Sprintf("(%v, %v)", p.X, p.Y)
 }
 
+// Tile A tile describes the conditions of a terrain (e.g. cost to traverse).
+// A negative cost indicates this tile is not traversable.
 type Tile struct {
 	Id   uint8
 	Cost float32
@@ -60,49 +63,51 @@ func (t *Tile) IsTraversable() bool {
 	return t.Cost > 0
 }
 
-type Carte struct {
+// World The discrete 2D world our agents operate in.
+type World struct {
 	Width  int
 	Height int
 	Inner  []uint8
 }
 
-func (c *Carte) IsInBounds(p Position) bool {
-	return p.X >= 0 && p.X < c.Width && p.Y >= 0 && p.Y < c.Height
+func (w *World) IsInBounds(p Position) bool {
+	return p.X >= 0 && p.X < w.Width && p.Y >= 0 && p.Y < w.Height
 }
 
-func (c *Carte) GetRaw(x int, y int) uint8 {
-	return c.Inner[y*c.Width+x]
+func (w *World) GetRaw(x int, y int) uint8 {
+	return w.Inner[y*w.Width+x]
 }
 
-func (c *Carte) GetTile(p Position) *Tile {
-	return TILES[c.GetRaw(p.X, p.Y)]
+func (w *World) GetTile(p Position) *Tile {
+	return TILES[w.GetRaw(p.X, p.Y)]
 }
 
 // GetNeighbors returns traversable tiles around position (x, y)
-func (c *Carte) GetNeighbors(p Position, diagonal bool) []Position {
+func (w *World) GetNeighbors(p Position, diagonal bool) (pos []Position) {
 	// No functional programming, thanks Go
-	var arr []Position
+	// I wonder if there is a way to not allocate, this function gets called for each tile of our world.
+	// This may probably be calculated ahead of time since the world won't change.
 	var offsets []Position
 	if diagonal {
-		arr = make([]Position, 0, 8)
+		pos = make([]Position, 0, 8)
 		offsets = []Position{
 			{X: -1, Y: 1}, {Y: 1}, {X: 1, Y: 1},
 			{X: -1}, {X: 1},
 			{X: -1, Y: -1}, {Y: -1}, {X: 1, Y: -1}}
 	} else {
-		arr = make([]Position, 0, 4)
+		pos = make([]Position, 0, 4)
 		offsets = []Position{{X: 1}, {Y: 1}, {X: -1}, {Y: -1}}
 	}
 	for _, offset := range offsets {
 		n := p.Plus(offset)
-		if c.IsInBounds(n) && c.GetTile(n).IsTraversable() {
-			arr = append(arr, n)
+		if w.IsInBounds(n) && w.GetTile(n).IsTraversable() {
+			pos = append(pos, n)
 		}
 	}
-	return arr
+	return pos
 }
 
-func NewMapFromFile(name string) *Carte {
+func NewMapFromFile(name string) *World {
 	file, err := os.Open(name)
 	if err != nil {
 		log.Fatal(err)
@@ -113,11 +118,11 @@ func NewMapFromFile(name string) *Carte {
 	return NewMap(file)
 }
 
-func NewMapFromString(mapText string) *Carte {
+func NewMapFromString(mapText string) *World {
 	return NewMap(strings.NewReader(mapText))
 }
 
-func NewMap(r io.Reader) *Carte {
+func NewMap(r io.Reader) *World {
 	scanner := bufio.NewScanner(r)
 
 	if !scanner.Scan() {
@@ -151,10 +156,10 @@ func NewMap(r io.Reader) *Carte {
 		log.Fatal(err)
 	}
 
-	return &Carte{Width: width, Height: height, Inner: tab}
+	return &World{Width: width, Height: height, Inner: tab}
 }
 
-func NewMapRandom(width int, height int, fill float32, seed int64) *Carte {
+func NewMapRandom(width int, height int, fill float32, seed int64) *World {
 	rand := rand.New(rand.NewSource(seed))
 	inner := make([]uint8, width*height)
 	for i := 0; i < width*height; i++ {
@@ -164,24 +169,35 @@ func NewMapRandom(width int, height int, fill float32, seed int64) *Carte {
 			inner[i] = ' '
 		}
 	}
-	return &Carte{Width: width, Height: height, Inner: inner}
+	return &World{Width: width, Height: height, Inner: inner}
 }
 
-func NewMapEmpty(width, height int) *Carte {
+func NewMapEmpty(width, height int) *World {
 	inner := make([]uint8, width*height)
 	for i := range inner {
 		inner[i] = ' '
 	}
-	return &Carte{Width: width, Height: height, Inner: inner}
+	return &World{Width: width, Height: height, Inner: inner}
 }
 
-func (c Carte) String() string {
-	var s = fmt.Sprintf("%vx%v\n", c.Width, c.Height)
-	for j := 0; j < c.Height; j++ {
-		for i := 0; i < c.Width; i++ {
-			s += string(rune(c.GetRaw(i, j)))
+func (w World) String() string {
+	var s = fmt.Sprintf("%vx%v\n", w.Width, w.Height)
+	for j := 0; j < w.Height; j++ {
+		for i := 0; i < w.Width; i++ {
+			s += string(rune(w.GetRaw(i, j)))
 		}
 		s += "\n"
 	}
 	return s
+}
+
+func (w World) SaveToFile(name string) {
+	if file, err := os.Create(name); err != nil {
+		log.Fatal(err)
+	} else {
+		defer file.Close()
+		if _, err := file.WriteString(w.String()); err != nil {
+			log.Fatal(err)
+		}
+	}
 }

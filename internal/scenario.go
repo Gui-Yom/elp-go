@@ -6,7 +6,7 @@ import (
 )
 
 type Scenario struct {
-	Carte            *pathfinding.Carte
+	Carte            *pathfinding.World
 	DiagonalMovement bool
 	Tasks            []interface{}
 	NumAgents        uint32
@@ -30,13 +30,13 @@ func (res ScenarioResult) String() string {
 }
 
 type Task interface {
-	a()
+	Execute(agent *Agent)
 }
 
 type MoveTask struct {
 	Goal pathfinding.Position
 }
 
-func (this MoveTask) a() {
+func (this MoveTask) Execute(agent *Agent) {
 
 }

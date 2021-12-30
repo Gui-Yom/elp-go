@@ -13,7 +13,7 @@ type Astar struct {
 
 var _ Pathfinder = (*Astar)(nil)
 
-func (astar Astar) FindPath(carte *Carte, start Position, goal Position) ([]Position, Stats) {
+func (astar Astar) FindPath(world *World, start Position, goal Position) ([]Position, Stats) {
 	startTime := time.Now()
 
 	costs := make(map[Position]float32)
@@ -34,9 +34,9 @@ func (astar Astar) FindPath(carte *Carte, start Position, goal Position) ([]Posi
 			break
 		}
 
-		neighbors := carte.GetNeighbors(curr, astar.Diagonal)
+		neighbors := world.GetNeighbors(curr, astar.Diagonal)
 		for _, node := range neighbors {
-			tileCost := carte.GetTile(node).Cost
+			tileCost := world.GetTile(node).Cost
 			newCost := costs[curr] + tileCost
 			prevCost, exists := costs[node]
 			if !exists || newCost < prevCost {
@@ -50,5 +50,5 @@ func (astar Astar) FindPath(carte *Carte, start Position, goal Position) ([]Posi
 		return nil, Stats{Iterations: iter, Duration: time.Now().Sub(startTime)}
 	}
 	path := makePath(parentChain, start, goal)
-	return path, Stats{Iterations: iter, Duration: time.Now().Sub(startTime), Cost: pathCost(carte, path)}
+	return path, Stats{Iterations: iter, Duration: time.Now().Sub(startTime), Cost: pathCost(world, path)}
 }

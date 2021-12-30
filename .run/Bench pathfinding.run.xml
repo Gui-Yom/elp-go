@@ -1,7 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Bench pathfinding" type="GoTestRunConfiguration" factoryName="Go Test">
+    <output_file path="$PROJECT_DIR$/target/bench_pathfinding.log" is_save="true" />
     <module name="elp-go" />
     <working_directory value="$PROJECT_DIR$" />
+    <parameters value="-test.benchtime 5s -test.benchmem -test.outputdir target -test.cpuprofile pathfinding.cpu.prof -test.memprofile pathfinding.mem.prof" />
     <kind value="PACKAGE" />
     <package value="elp-go/internal/pathfinding" />
     <directory value="$PROJECT_DIR$" />

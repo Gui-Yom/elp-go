@@ -7,7 +7,7 @@ import (
 )
 
 type Pathfinder interface {
-	FindPath(carte *Carte, start Position, goal Position) ([]Position, Stats)
+	FindPath(world *World, start Position, goal Position) ([]Position, Stats)
 }
 
 func NewDijkstra(diagonal bool, queueBuilder func() queue.PriorityQueue) Pathfinder {
@@ -48,9 +48,10 @@ func makePath(parentChain map[Position]Position, start Position, goal Position) 
 	return path
 }
 
-func pathCost(carte *Carte, path []Position) (cost float32) {
+// pathCost Calculates the cost of a path, defined as the sum of the cost of all tiles
+func pathCost(world *World, path []Position) (cost float32) {
 	for _, p := range path[1:] {
-		cost += carte.GetTile(p).Cost
+		cost += world.GetTile(p).Cost
 	}
 	return cost
 }

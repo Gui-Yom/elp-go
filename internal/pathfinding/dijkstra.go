@@ -13,7 +13,7 @@ type Dijkstra struct {
 // Implementation is implicit, thanks Go
 var _ Pathfinder = (*Dijkstra)(nil)
 
-func (dijk Dijkstra) FindPath(carte *Carte, start Position, goal Position) ([]Position, Stats) {
+func (dijk Dijkstra) FindPath(world *World, start Position, goal Position) ([]Position, Stats) {
 	startTime := time.Now()
 
 	costs := make(map[Position]float32)
@@ -35,9 +35,9 @@ func (dijk Dijkstra) FindPath(carte *Carte, start Position, goal Position) ([]Po
 
 		iter++
 
-		neighbors := carte.GetNeighbors(curr, dijk.Diagonal)
+		neighbors := world.GetNeighbors(curr, dijk.Diagonal)
 		for _, node := range neighbors {
-			tileCost := carte.GetTile(node).Cost
+			tileCost := world.GetTile(node).Cost
 			newCost := costs[curr] + tileCost
 			prevCost, exists := costs[node]
 			if !exists || newCost < prevCost {
@@ -51,5 +51,5 @@ func (dijk Dijkstra) FindPath(carte *Carte, start Position, goal Position) ([]Po
 		return nil, Stats{Iterations: iter, Duration: time.Now().Sub(startTime)}
 	}
 	path := makePath(parentChain, start, goal)
-	return path, Stats{Iterations: iter, Duration: time.Now().Sub(startTime), Cost: pathCost(carte, path)}
+	return path, Stats{Iterations: iter, Duration: time.Now().Sub(startTime), Cost: pathCost(world, path)}
 }
