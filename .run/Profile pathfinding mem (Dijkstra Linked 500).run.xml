@@ -1,10 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Profile pathfinding mem (Dijkstra Linked 500)" type="GoTestRunConfiguration" factoryName="Go Test">
-    <output_file path="$PROJECT_DIR$/target/bench_pathfinding.log" is_save="true" />
+    <output_file path="$PROJECT_DIR$/target/bench_pathfinding.log" />
     <module name="elp-go" />
     <working_directory value="$PROJECT_DIR$" />
-    <go_parameters value="-buildmode=exe" />
-    <parameters value="-test.bench DijkstraLinked500 -test.benchtime 100x -test.outputdir target -test.memprofile pathfinding.dl500.mem.prof" />
+    <parameters value="-test.bench DijkstraLinked500$ -test.benchtime 1x -test.outputdir target -test.memprofile pathfinding.dl500.mem.prof" />
     <kind value="PACKAGE" />
     <package value="elp-go/internal/pathfinding" />
     <directory value="$PROJECT_DIR$" />

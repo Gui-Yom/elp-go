@@ -95,6 +95,41 @@ $ target/bench.pathfinding -test.v -test.paniconexit0 -test.bench <spec> -test.r
 
 Lecture des données de profilage avec pprof. Interface web interactive avec `pprof -http : cpu.prof`
 
+#### Bottlenecks identifiés
+
+Pour Dijkstra :
+
+1. Priority queue (push O(n) pour la linked list et push/pop pour le pairing heap)
+2. Map des coûts (get/put)
+3. GetNeighbors (appel pour chaque tile, allocations en masse)
+
+Pour A* (petite carte 300) :
+
+1. Map des coûts
+2. Priority queue
+3. GetNeighbors
+
+Pour A* (grande carte 10000) :
+
+1. Map des coûts
+2. Map des tiles
+3. Priority queue & GetNeighbors (impact similaire)
+
+On note aussi un coût non négligeable dû au boxing (interface{}) des ifaces.
+
+#### Pistes d'améliorations
+
+1. Meilleure implémentation de priority queue (linked list O(n) -_-, impl pairing heap probablement foireuse). Meilleure
+   gestion de la mémoire en sachant la taille du problème afin de limiter les allocs.
+2. Map optimisée Position -> Coût. Position = 2 entier 32 bits, Coût = float32. Il existe des impl de map bien mieux
+   qu'une hashmap pour ce genre de données.
+3. Utilisation d'un switch au lieu d'une map pour les tiles. Empeche d'avoir des tiles définies dynamiquement. Ou alors
+   stocker la définition de tile directement dans la carte, multiplie par 8 la taille de la carte mais enleve toute les
+   branches.
+4. Spécialisation des queues pour éviter le boxing. Casse l'architecture en package du projet.
+5. Précalcul des voisins pour éviter les allocs répétées au runtime. Pourrait quadrupler la taille en mémoire donc
+   moyen.
+
 ## Détails
 
 ### Organisation du code

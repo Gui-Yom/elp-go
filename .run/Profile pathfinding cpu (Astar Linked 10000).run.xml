@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Profile pathfinding cpu (Dijkstra Linked 500)" type="GoTestRunConfiguration" factoryName="Go Test">
+  <configuration default="false" name="Profile pathfinding cpu (Astar Linked 10000)" type="GoTestRunConfiguration" factoryName="Go Test">
     <output_file path="$PROJECT_DIR$/target/bench_pathfinding.log" />
     <module name="elp-go" />
     <working_directory value="$PROJECT_DIR$" />
-    <parameters value="-test.bench DijkstraLinked500$ -test.benchtime 20s -test.outputdir target -test.cpuprofile pathfinding.dl500.cpu.prof" />
+    <parameters value="-test.bench AstarLinked10000$ -test.benchtime 20s -test.outputdir target -test.cpuprofile pathfinding.al10000.cpu.prof" />
     <kind value="PACKAGE" />
     <package value="elp-go/internal/pathfinding" />
     <directory value="$PROJECT_DIR$" />
