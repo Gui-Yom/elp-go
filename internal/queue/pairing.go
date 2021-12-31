@@ -16,11 +16,11 @@ type pqnode struct {
 	// No generics, thanks Go.
 	item world.Position
 	// The priority of this item
-	priority float32
+	priority float64
 	children []*pqnode
 }
 
-func (q *pairingQueue) Push(item world.Position, priority float32) {
+func (q *pairingQueue) Push(item world.Position, priority float64) {
 	q.root = merge(q.root, &pqnode{item: item, priority: priority})
 }
 

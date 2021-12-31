@@ -19,7 +19,7 @@ func genTasks(num int, width, height int) []interface{} {
 
 func testRequestHandler(t *testing.T, handler RequestHandler) {
 	scen := Scenario{
-		World:            world.NewMapEmpty(100, 100),
+		World:            world.NewWorldEmpty(100, 100),
 		DiagonalMovement: true,
 		Tasks:            genTasks(8, 100, 100),
 		NumAgents:        4,

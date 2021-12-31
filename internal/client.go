@@ -85,9 +85,9 @@ func mapFromArgs(args []string) *world.World {
 				parseError(args[4], "seed", "int")
 			}
 		}
-		carte = world.NewMapRandom(width, height, fill, seed)
+		carte = world.NewWorldRandom(width, height, fill, seed)
 	} else {
-		carte = world.NewMapFromFile(args[0])
+		carte = world.NewWorldFromFile(args[0])
 	}
 	return carte
 }

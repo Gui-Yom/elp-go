@@ -20,10 +20,10 @@ type linkedQueue struct {
 // We should really specialize the type because we only use those priority queues to store pathfinding.Position items.
 type lqnode struct {
 	item     world.Position
-	priority float32
+	priority float64
 }
 
-func (n linkedQueue) Push(item world.Position, priority float32) {
+func (n linkedQueue) Push(item world.Position, priority float64) {
 	element := lqnode{item: item, priority: priority}
 	if n.items.Len() == 0 {
 		n.items.PushFront(element)

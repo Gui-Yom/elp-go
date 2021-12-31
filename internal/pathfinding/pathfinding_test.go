@@ -11,7 +11,7 @@ import (
 // TESTS //
 
 func testPathfinderSimple(t *testing.T, pf Pathfinder) {
-	carte := world.NewMapFromString(`4x4
+	carte := world.NewWorldFromString(`4x4
     
 xx  
     
@@ -22,35 +22,35 @@ xx
 }
 
 func testPathfinderMapFile(t *testing.T, pf Pathfinder) {
-	carte := world.NewMapFromFile("map0.map")
+	carte := world.NewWorldFromFile("map0.map")
 	log.Printf("map: %v", carte)
 	path, _ := pf.FindPath(carte, world.Position{}, world.Position{X: 9, Y: 9})
 	assert.NotNil(t, path, "A path should exist")
 }
 
 func testPathfinderBig(t *testing.T, pf Pathfinder) {
-	carte := world.NewMapRandom(100, 100, 0.30, 42)
+	carte := world.NewWorldRandom(100, 100, 0.30, 42)
 	log.Printf("map: %v", carte)
 	path, _ := pf.FindPath(carte, world.Position{}, world.Position{X: 98, Y: 97})
 	assert.NotNil(t, path, "A path should exist")
 }
 
 func testPathfinderBigger(t *testing.T, pf Pathfinder) {
-	carte := world.NewMapRandom(300, 300, 0.30, 42)
+	carte := world.NewWorldRandom(300, 300, 0.30, 42)
 	//log.Printf("map: %v", carte)
 	path, _ := pf.FindPath(carte, world.Position{}, world.Position{X: 298, Y: 298})
 	assert.NotNil(t, path, "A path should exist")
 }
 
 func testPathfinderBiggger(t *testing.T, pf Pathfinder) {
-	carte := world.NewMapRandom(500, 500, 0.30, 42)
+	carte := world.NewWorldRandom(500, 500, 0.30, 42)
 	//log.Printf("map: %v", carte)
 	path, _ := pf.FindPath(carte, world.Position{}, world.Position{X: 498, Y: 498})
 	assert.NotNil(t, path, "A path should exist")
 }
 
 func testPathfinderBiggest(t *testing.T, pf Pathfinder) {
-	carte := world.NewMapRandom(1000, 1000, 0.30, 42)
+	carte := world.NewWorldRandom(1000, 1000, 0.30, 42)
 	//log.Printf("map: %v", carte)
 	path, _ := pf.FindPath(carte, world.Position{}, world.Position{X: 998, Y: 998})
 	assert.NotNil(t, path, "A path should exist")
@@ -128,7 +128,7 @@ func benchmarkPathfinder(pathfinder Pathfinder, carte *world.World, goal world.P
 func BenchmarkDijkstraLinked100(b *testing.B) {
 	benchmarkPathfinder(
 		NewDijkstra(true, queue.NewLinked),
-		world.NewMapRandom(100, 100, 0.3, 42),
+		world.NewWorldRandom(100, 100, 0.3, 42),
 		world.Pos(97, 98),
 		b)
 }
@@ -136,7 +136,7 @@ func BenchmarkDijkstraLinked100(b *testing.B) {
 func BenchmarkDijkstraLinked1000(b *testing.B) {
 	benchmarkPathfinder(
 		NewDijkstra(true, queue.NewLinked),
-		world.NewMapRandom(1000, 1000, 0.2, 42),
+		world.NewWorldRandom(1000, 1000, 0.2, 42),
 		world.Pos(998, 998),
 		b)
 }
@@ -144,7 +144,7 @@ func BenchmarkDijkstraLinked1000(b *testing.B) {
 func BenchmarkDijkstraPairing100(b *testing.B) {
 	benchmarkPathfinder(
 		NewDijkstra(true, queue.NewPairing),
-		world.NewMapRandom(100, 100, 0.3, 42),
+		world.NewWorldRandom(100, 100, 0.3, 42),
 		world.Pos(98, 97),
 		b)
 }
@@ -152,7 +152,7 @@ func BenchmarkDijkstraPairing100(b *testing.B) {
 func BenchmarkDijkstraPairing300(b *testing.B) {
 	benchmarkPathfinder(
 		NewDijkstra(true, queue.NewPairing),
-		world.NewMapRandom(300, 300, 0.2, 42),
+		world.NewWorldRandom(300, 300, 0.2, 42),
 		world.Pos(298, 298),
 		b)
 }
@@ -160,7 +160,7 @@ func BenchmarkDijkstraPairing300(b *testing.B) {
 func BenchmarkAstarLinked100(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewLinked),
-		world.NewMapRandom(100, 100, 0.3, 42),
+		world.NewWorldRandom(100, 100, 0.3, 42),
 		world.Pos(98, 97),
 		b)
 }
@@ -168,7 +168,7 @@ func BenchmarkAstarLinked100(b *testing.B) {
 func BenchmarkAstarLinked1000(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewLinked),
-		world.NewMapRandom(1000, 1000, 0.2, 42),
+		world.NewWorldRandom(1000, 1000, 0.2, 42),
 		world.Pos(998, 998),
 		b)
 }
@@ -176,7 +176,7 @@ func BenchmarkAstarLinked1000(b *testing.B) {
 func BenchmarkAstarLinked10000(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewLinked),
-		world.NewMapRandom(10000, 10000, 0.2, 42),
+		world.NewWorldRandom(10000, 10000, 0.2, 42),
 		world.Pos(9998, 9998),
 		b)
 }
@@ -184,7 +184,7 @@ func BenchmarkAstarLinked10000(b *testing.B) {
 func BenchmarkAstarPairing100(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewPairing),
-		world.NewMapRandom(100, 100, 0.3, 42),
+		world.NewWorldRandom(100, 100, 0.3, 42),
 		world.Pos(98, 97),
 		b)
 }
@@ -192,7 +192,7 @@ func BenchmarkAstarPairing100(b *testing.B) {
 func BenchmarkAstarPairing300(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewPairing),
-		world.NewMapRandom(300, 300, 0.2, 42),
+		world.NewWorldRandom(300, 300, 0.2, 42),
 		world.Pos(298, 298),
 		b)
 }
@@ -200,7 +200,7 @@ func BenchmarkAstarPairing300(b *testing.B) {
 func BenchmarkAstarPairing1000(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewPairing),
-		world.NewMapRandom(1000, 1000, 0.2, 42),
+		world.NewWorldRandom(1000, 1000, 0.2, 42),
 		world.Pos(998, 998),
 		b)
 }

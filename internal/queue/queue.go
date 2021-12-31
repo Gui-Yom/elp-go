@@ -8,7 +8,7 @@ import (
 // PriorityQueue A min-priority queue.
 type PriorityQueue interface {
 	// Push Insert an item with the specified priority
-	Push(item world.Position, priority float32)
+	Push(item world.Position, priority float64)
 	// Pop Removes an item, returns nil if empty
 	Pop() world.Position
 	// Empty returns true if there are no more items

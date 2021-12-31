@@ -1,6 +1,7 @@
 package pathfinding
 
 import (
+	"elp-go/internal/fastmap"
 	"elp-go/internal/queue"
 	"elp-go/internal/world"
 	"math"
@@ -22,12 +23,12 @@ func (dijk Dijkstra) FindPath(w *world.World, start world.Position, goal world.P
 	// We divide by 8 to account for the fact that most of the disc is out of bounds or walls
 	presize := int(math.Max(math.Pi*float64(EuclideanSq(start, goal))/8.0, 4))
 	//fmt.Printf("presize: %v\n", presize)
-	costs := make(map[world.Position]float32, presize)
-	costs[start] = 0
+	costs := fastmap.New(presize, 0.9)
+	costs.PutCost(start, 0.0)
 
 	frontier := dijk.queueBuilder()
 	frontier.Push(start, 0)
-	parentChain := make(map[world.Position]world.Position, presize)
+	parentChain := fastmap.New(presize, 0.9)
 
 	var iter uint
 	var curr world.Position
@@ -43,11 +44,12 @@ func (dijk Dijkstra) FindPath(w *world.World, start world.Position, goal world.P
 
 		for _, node := range w.GetNeighbors(curr, dijk.Diagonal) {
 			tileCost := w.GetCost(node)
-			newCost := costs[curr] + tileCost
-			prevCost, exists := costs[node]
+			currCost, _ := costs.GetCost(curr)
+			newCost := currCost + tileCost
+			prevCost, exists := costs.GetCost(node)
 			if !exists || newCost < prevCost {
-				costs[node] = newCost
-				parentChain[node] = curr
+				costs.PutCost(node, newCost)
+				parentChain.PutPos(node, curr)
 				frontier.Push(node, newCost)
 			}
 		}

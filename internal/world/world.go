@@ -13,12 +13,12 @@ import (
 
 // Position A position in the discrete 2D world
 type Position struct {
-	X int
-	Y int
+	X int32
+	Y int32
 }
 
 func Pos(x, y int) Position {
-	return Position{X: x, Y: y}
+	return Position{X: int32(x), Y: int32(y)}
 }
 
 func (p Position) Plus(o Position) Position {
@@ -33,7 +33,7 @@ func (p Position) String() string {
 // A negative cost indicates this tile is not traversable.
 type Tile struct {
 	Id   uint8
-	Cost float32
+	Cost float64
 }
 
 // No enums, thank you Go
@@ -71,7 +71,7 @@ type World struct {
 }
 
 func (w *World) IsInBounds(p Position) bool {
-	return p.X >= 0 && p.X < w.Width && p.Y >= 0 && p.Y < w.Height
+	return p.X >= 0 && p.X < int32(w.Width) && p.Y >= 0 && p.Y < int32(w.Height)
 }
 
 func (w *World) GetRaw(x int, y int) uint8 {
@@ -79,12 +79,12 @@ func (w *World) GetRaw(x int, y int) uint8 {
 }
 
 func (w *World) GetTile(p Position) *Tile {
-	return TILES[w.GetRaw(p.X, p.Y)]
+	return TILES[w.GetRaw(int(p.X), int(p.Y))]
 }
 
-func (w *World) GetCost(p Position) (cost float32) {
+func (w *World) GetCost(p Position) (cost float64) {
 	// Switch expressions ?
-	switch w.GetRaw(p.X, p.Y) {
+	switch w.GetRaw(int(p.X), int(p.Y)) {
 	case TILE_EMPTY.Id:
 		cost = TILE_EMPTY.Cost
 	case TILE_WALL.Id:
@@ -124,7 +124,7 @@ func (w *World) GetNeighbors(p Position, diagonal bool) (pos []Position) {
 	return pos
 }
 
-func NewMapFromFile(name string) *World {
+func NewWorldFromFile(name string) *World {
 	file, err := os.Open(name)
 	if err != nil {
 		log.Fatal(err)
@@ -132,14 +132,14 @@ func NewMapFromFile(name string) *World {
 	// Schedule file close immediately
 	defer file.Close()
 
-	return NewMap(file)
+	return NewWorld(file)
 }
 
-func NewMapFromString(mapText string) *World {
-	return NewMap(strings.NewReader(mapText))
+func NewWorldFromString(mapText string) *World {
+	return NewWorld(strings.NewReader(mapText))
 }
 
-func NewMap(r io.Reader) *World {
+func NewWorld(r io.Reader) *World {
 	scanner := bufio.NewScanner(r)
 
 	if !scanner.Scan() {
@@ -176,7 +176,7 @@ func NewMap(r io.Reader) *World {
 	return &World{Width: width, Height: height, Inner: tab}
 }
 
-func NewMapRandom(width int, height int, fill float32, seed int64) *World {
+func NewWorldRandom(width int, height int, fill float32, seed int64) *World {
 	rand := rand.New(rand.NewSource(seed))
 	inner := make([]uint8, width*height)
 	for i := 0; i < width*height; i++ {
@@ -189,7 +189,7 @@ func NewMapRandom(width int, height int, fill float32, seed int64) *World {
 	return &World{Width: width, Height: height, Inner: inner}
 }
 
-func NewMapEmpty(width, height int) *World {
+func NewWorldEmpty(width, height int) *World {
 	inner := make([]uint8, width*height)
 	for i := range inner {
 		inner[i] = ' '
