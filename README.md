@@ -79,6 +79,12 @@ $ go test -c -o target/bench.pathfinding.exe elp-go/internal/pathfinding
 $ target/bench.pathfinding -test.v -test.paniconexit0 -test.bench . -test.run ^$ -test.benchtime 5s -test.benchmem
 ```
 
+Comparer les performances depuis un certain commit :
+
+```shell
+$ benchdiff --base-ref=d1190c07f745946dd36d8894e64562874ebf32f9 --bench=AstarLinked1000$ --benchmem --benchtime=1000x --packages=elp-go/internal/pathfinding
+```
+
 ### Profilage
 
 Il est nécessaire de limiter les benchmarks pour chaque séquence de profilage. CPU :

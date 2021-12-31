@@ -2,6 +2,7 @@ package pathfinding
 
 import (
 	"elp-go/internal/queue"
+	"math"
 	"time"
 )
 
@@ -16,12 +17,16 @@ var _ Pathfinder = (*Dijkstra)(nil)
 func (dijk Dijkstra) FindPath(world *World, start Position, goal Position) ([]Position, Stats) {
 	startTime := time.Now()
 
-	costs := make(map[Position]float32)
+	// Dijkstra explores everywhere, we model it by a disc pi*r^2
+	// We divide by 8 to account for the fact that most of the disc is out of bounds or walls
+	presize := int(math.Max(math.Pi*float64(EuclideanSq(start, goal))/8.0, 4))
+	//fmt.Printf("presize: %v\n", presize)
+	costs := make(map[Position]float32, presize)
 	costs[start] = 0
 
 	frontier := dijk.queueBuilder()
 	frontier.Push(start, 0)
-	parentChain := make(map[Position]Position)
+	parentChain := make(map[Position]Position, presize)
 
 	var iter uint
 	var curr Position
@@ -47,6 +52,7 @@ func (dijk Dijkstra) FindPath(world *World, start Position, goal Position) ([]Po
 			}
 		}
 	}
+	//fmt.Printf("costLen: %v, chainLen: %v\n", len(costs), len(parentChain))
 	if curr != goal {
 		return nil, Stats{Iterations: iter, Duration: time.Now().Sub(startTime)}
 	}

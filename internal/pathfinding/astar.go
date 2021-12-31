@@ -2,6 +2,7 @@ package pathfinding
 
 import (
 	"elp-go/internal/queue"
+	"math"
 	"time"
 )
 
@@ -16,12 +17,16 @@ var _ Pathfinder = (*Astar)(nil)
 func (astar Astar) FindPath(world *World, start Position, goal Position) ([]Position, Stats) {
 	startTime := time.Now()
 
-	costs := make(map[Position]float32)
+	// Astar explores in the direction of the goal, we model it by a segment
+	// We multiply that number to account for the fact there is walls
+	presize := int(math.Max(2*math.Sqrt2*float64(Euclidean(start, goal)), 4))
+	//fmt.Printf("presize: %v\n", presize)
+	costs := make(map[Position]float32, presize)
 	costs[start] = 0
 
 	frontier := astar.queueBuilder()
 	frontier.Push(start, 0)
-	parentChain := make(map[Position]Position)
+	parentChain := make(map[Position]Position, presize)
 
 	var iter uint
 	var curr Position
@@ -46,6 +51,7 @@ func (astar Astar) FindPath(world *World, start Position, goal Position) ([]Posi
 			}
 		}
 	}
+	//fmt.Printf("costLen: %v, chainLen: %v\n", len(costs), len(parentChain))
 	if curr != goal {
 		return nil, Stats{Iterations: iter, Duration: time.Now().Sub(startTime)}
 	}
