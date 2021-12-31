@@ -37,7 +37,7 @@ func (dijk Dijkstra) FindPath(world *World, start Position, goal Position) ([]Po
 
 		neighbors := world.GetNeighbors(curr, dijk.Diagonal)
 		for _, node := range neighbors {
-			tileCost := world.GetTile(node).Cost
+			tileCost := world.GetCost(node)
 			newCost := costs[curr] + tileCost
 			prevCost, exists := costs[node]
 			if !exists || newCost < prevCost {

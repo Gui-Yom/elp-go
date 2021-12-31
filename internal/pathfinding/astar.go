@@ -36,7 +36,7 @@ func (astar Astar) FindPath(world *World, start Position, goal Position) ([]Posi
 
 		neighbors := world.GetNeighbors(curr, astar.Diagonal)
 		for _, node := range neighbors {
-			tileCost := world.GetTile(node).Cost
+			tileCost := world.GetCost(node)
 			newCost := costs[curr] + tileCost
 			prevCost, exists := costs[node]
 			if !exists || newCost < prevCost {

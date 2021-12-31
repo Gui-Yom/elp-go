@@ -3,7 +3,7 @@
     <output_file path="$PROJECT_DIR$/target/pathfinding_al1000.log" is_save="true" />
     <module name="elp-go" />
     <working_directory value="$PROJECT_DIR$" />
-    <parameters value="-test.bench AstarLinked1000$ -test.benchtime 20x -test.benchmem" />
+    <parameters value="-test.bench AstarLinked1000$ -test.benchtime 1000x -test.benchmem" />
     <kind value="PACKAGE" />
     <package value="elp-go/internal/pathfinding" />
     <directory value="$PROJECT_DIR$" />

@@ -82,6 +82,23 @@ func (w *World) GetTile(p Position) *Tile {
 	return TILES[w.GetRaw(p.X, p.Y)]
 }
 
+func (w *World) GetCost(p Position) (cost float32) {
+	// Switch expressions ?
+	switch w.GetRaw(p.X, p.Y) {
+	case TILE_EMPTY.Id:
+		cost = TILE_EMPTY.Cost
+	case TILE_WALL.Id:
+		cost = TILE_WALL.Cost
+	case TILE_GOAL.Id:
+		cost = TILE_GOAL.Cost
+	case TILE_CONVEYOR_BELT.Id:
+		cost = TILE_CONVEYOR_BELT.Cost
+	default:
+		panic("Unknown tile")
+	}
+	return cost
+}
+
 // GetNeighbors returns traversable tiles around position (x, y)
 func (w *World) GetNeighbors(p Position, diagonal bool) (pos []Position) {
 	// No functional programming, thanks Go
@@ -100,7 +117,7 @@ func (w *World) GetNeighbors(p Position, diagonal bool) (pos []Position) {
 	}
 	for _, offset := range offsets {
 		n := p.Plus(offset)
-		if w.IsInBounds(n) && w.GetTile(n).IsTraversable() {
+		if w.IsInBounds(n) && w.GetCost(n) > 0 {
 			pos = append(pos, n)
 		}
 	}

@@ -51,7 +51,7 @@ func makePath(parentChain map[Position]Position, start Position, goal Position) 
 // pathCost Calculates the cost of a path, defined as the sum of the cost of all tiles
 func pathCost(world *World, path []Position) (cost float32) {
 	for _, p := range path[1:] {
-		cost += world.GetTile(p).Cost
+		cost += world.GetCost(p)
 	}
 	return cost
 }
