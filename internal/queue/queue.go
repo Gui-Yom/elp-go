@@ -1,13 +1,16 @@
 package queue
 
-import "container/list"
+import (
+	"container/list"
+	"elp-go/internal/world"
+)
 
 // PriorityQueue A min-priority queue.
 type PriorityQueue interface {
 	// Push Insert an item with the specified priority
-	Push(item interface{}, priority float32)
+	Push(item world.Position, priority float32)
 	// Pop Removes an item, returns nil if empty
-	Pop() interface{}
+	Pop() world.Position
 	// Empty returns true if there are no more items
 	Empty() bool
 }

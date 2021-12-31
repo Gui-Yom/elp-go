@@ -2,12 +2,13 @@ package pathfinding
 
 import (
 	"elp-go/internal/queue"
+	"elp-go/internal/world"
 	"fmt"
 	"time"
 )
 
 type Pathfinder interface {
-	FindPath(world *World, start Position, goal Position) ([]Position, Stats)
+	FindPath(world *world.World, start world.Position, goal world.Position) ([]world.Position, Stats)
 }
 
 func NewDijkstra(diagonal bool, queueBuilder func() queue.PriorityQueue) Pathfinder {
@@ -32,8 +33,8 @@ func (s Stats) String() string {
 }
 
 // makePath creates a path (position slice) from a parent chain and the 2 path ends
-func makePath(parentChain map[Position]Position, start Position, goal Position) []Position {
-	path := make([]Position, 1, len(parentChain))
+func makePath(parentChain map[world.Position]world.Position, start world.Position, goal world.Position) []world.Position {
+	path := make([]world.Position, 1, len(parentChain))
 	path[0] = goal
 	// Follow the parentChain to create the path from the goal
 	for curr := goal; curr != start; {
@@ -49,7 +50,7 @@ func makePath(parentChain map[Position]Position, start Position, goal Position) 
 }
 
 // pathCost Calculates the cost of a path, defined as the sum of the cost of all tiles
-func pathCost(world *World, path []Position) (cost float32) {
+func pathCost(world *world.World, path []world.Position) (cost float32) {
 	for _, p := range path[1:] {
 		cost += world.GetCost(p)
 	}

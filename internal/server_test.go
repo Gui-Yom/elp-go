@@ -3,6 +3,7 @@ package internal
 import (
 	"elp-go/internal/pathfinding"
 	"elp-go/internal/queue"
+	"elp-go/internal/world"
 	"fmt"
 	"math/rand"
 	"testing"
@@ -11,14 +12,14 @@ import (
 func genTasks(num int, width, height int) []interface{} {
 	tasks := make([]interface{}, num)
 	for i := 0; i < len(tasks); i++ {
-		tasks[i] = MoveTask{Goal: pathfinding.Pos(rand.Intn(width), rand.Intn(height))}
+		tasks[i] = MoveTask{Goal: world.Pos(rand.Intn(width), rand.Intn(height))}
 	}
 	return tasks
 }
 
 func testRequestHandler(t *testing.T, handler RequestHandler) {
 	scen := Scenario{
-		Carte:            pathfinding.NewMapEmpty(100, 100),
+		World:            world.NewMapEmpty(100, 100),
 		DiagonalMovement: true,
 		Tasks:            genTasks(8, 100, 100),
 		NumAgents:        4,

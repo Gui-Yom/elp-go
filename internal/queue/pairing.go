@@ -1,5 +1,9 @@
 package queue
 
+import (
+	"elp-go/internal/world"
+)
+
 var _ PriorityQueue = (*pairingQueue)(nil)
 
 // pairingQueue a priority queue based on a pairing heap.
@@ -10,13 +14,13 @@ type pairingQueue struct {
 
 type pqnode struct {
 	// No generics, thanks Go.
-	item interface{}
+	item world.Position
 	// The priority of this item
 	priority float32
 	children []*pqnode
 }
 
-func (q *pairingQueue) Push(item interface{}, priority float32) {
+func (q *pairingQueue) Push(item world.Position, priority float32) {
 	q.root = merge(q.root, &pqnode{item: item, priority: priority})
 }
 
@@ -24,9 +28,10 @@ func (q *pairingQueue) Empty() bool {
 	return q.root == nil
 }
 
-func (q *pairingQueue) Pop() interface{} {
+func (q *pairingQueue) Pop() world.Position {
 	if q.root == nil {
-		return nil
+		panic("Tried to Pop() with no items")
+		return world.Position{}
 	}
 	item := q.root.item
 	q.root = mergeChildren(q.root, q.root.children)

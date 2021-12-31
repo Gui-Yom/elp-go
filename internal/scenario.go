@@ -1,12 +1,12 @@
 package internal
 
 import (
-	"elp-go/internal/pathfinding"
+	"elp-go/internal/world"
 	"fmt"
 )
 
 type Scenario struct {
-	Carte            *pathfinding.World
+	World            *world.World
 	DiagonalMovement bool
 	Tasks            []interface{}
 	NumAgents        uint32
@@ -14,7 +14,7 @@ type Scenario struct {
 
 type CompletedTask struct {
 	AgentId uint32
-	Path    []pathfinding.Position
+	Path    []world.Position
 }
 
 type ScenarioResult struct {
@@ -34,7 +34,7 @@ type Task interface {
 }
 
 type MoveTask struct {
-	Goal pathfinding.Position
+	Goal world.Position
 }
 
 func (this MoveTask) Execute(agent *Agent) {

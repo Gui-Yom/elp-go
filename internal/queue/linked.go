@@ -1,6 +1,9 @@
 package queue
 
-import "container/list"
+import (
+	"container/list"
+	"elp-go/internal/world"
+)
 
 // Force implementation, thanks Go
 var _ PriorityQueue = (*linkedQueue)(nil)
@@ -16,11 +19,11 @@ type linkedQueue struct {
 // NOTE: our implementation is generic over the item values (interface{}), this costs one more allocation each time because the item gets boxed.
 // We should really specialize the type because we only use those priority queues to store pathfinding.Position items.
 type lqnode struct {
-	item     interface{}
+	item     world.Position
 	priority float32
 }
 
-func (n linkedQueue) Push(item interface{}, priority float32) {
+func (n linkedQueue) Push(item world.Position, priority float32) {
 	element := lqnode{item: item, priority: priority}
 	if n.items.Len() == 0 {
 		n.items.PushFront(element)
@@ -38,10 +41,11 @@ func (n linkedQueue) Push(item interface{}, priority float32) {
 	}
 }
 
-func (n linkedQueue) Pop() interface{} {
+func (n linkedQueue) Pop() world.Position {
 	elem := n.items.Front()
 	if elem == nil {
-		return nil
+		panic("Tried to Pop() with no items")
+		return world.Position{}
 	} else {
 		n.items.Remove(elem)
 		return elem.Value.(lqnode).item

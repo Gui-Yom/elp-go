@@ -2,7 +2,7 @@ package internal
 
 import (
 	"bufio"
-	"elp-go/internal/pathfinding"
+	"elp-go/internal/world"
 	"fmt"
 	"gioui.org/app"
 	"gioui.org/f32"
@@ -43,13 +43,13 @@ func fillMyList(l []Task) {
 	}
 }
 
-func mapFromArgs(args []string) *pathfinding.World {
+func mapFromArgs(args []string) *world.World {
 	parseError := func(value, name, type_ string) {
 		fmt.Printf("Can't parse %v '%v' as a valid %v", name, value, type_)
 		os.Exit(-1)
 	}
 
-	var carte *pathfinding.World
+	var carte *world.World
 	argsLen := len(args)
 	// Parsing des arguments de création de map
 	if argsLen == 0 || args[0] == "rand" {
@@ -85,9 +85,9 @@ func mapFromArgs(args []string) *pathfinding.World {
 				parseError(args[4], "seed", "int")
 			}
 		}
-		carte = pathfinding.NewMapRandom(width, height, fill, seed)
+		carte = world.NewMapRandom(width, height, fill, seed)
 	} else {
-		carte = pathfinding.NewMapFromFile(args[0])
+		carte = world.NewMapFromFile(args[0])
 	}
 	return carte
 }
@@ -99,8 +99,8 @@ func StartClient(addr net.IP, port int, gui bool, connect bool, mapArgs []string
 	//fillMyList(myListTasks)
 
 	carte := mapFromArgs(mapArgs)
-	tasks := []interface{}{MoveTask{Goal: pathfinding.Pos(16, 16)}}
-	scen := Scenario{Carte: carte, DiagonalMovement: true, NumAgents: 1, Tasks: tasks}
+	tasks := []interface{}{MoveTask{Goal: world.Pos(16, 16)}}
+	scen := Scenario{World: carte, DiagonalMovement: true, NumAgents: 1, Tasks: tasks}
 
 	wait := sync.Mutex{}
 	if connect {
@@ -139,7 +139,7 @@ func StartClient(addr net.IP, port int, gui bool, connect bool, mapArgs []string
 func showScenario(scen *Scenario) {
 	window := app.NewWindow(app.Title("elp-go"), app.Size(unit.Px(720), unit.Px(720)))
 
-	carte := scen.Carte
+	carte := scen.World
 	canvas := giocanvas.NewCanvas(720, 720, system.FrameEvent{})
 
 	black := giocanvas.ColorLookup("black")
@@ -185,9 +185,9 @@ func showScenario(scen *Scenario) {
 			tileHeigth := float32(size.Y) / float32(carte.Height)
 			for j := 0; j < carte.Height; j++ {
 				for i := 0; i < carte.Width; i++ {
-					switch carte.GetTile(pathfinding.Pos(i, j)) {
-					case pathfinding.TILE_EMPTY:
-					case pathfinding.TILE_WALL:
+					switch carte.GetTile(world.Pos(i, j)) {
+					case world.TILE_EMPTY:
+					case world.TILE_WALL:
 						canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, black)
 					default:
 						canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, red)

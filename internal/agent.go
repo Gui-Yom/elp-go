@@ -2,20 +2,21 @@ package internal
 
 import (
 	"elp-go/internal/pathfinding"
+	"elp-go/internal/world"
 	"log"
 )
 
 type Agent struct {
 	Id         uint32
-	Pos        pathfinding.Position
+	Pos        world.Position
 	pathfinder pathfinding.Pathfinder
 }
 
-func NewAgent(id uint32, pos pathfinding.Position, pathfinder pathfinding.Pathfinder) Agent {
+func NewAgent(id uint32, pos world.Position, pathfinder pathfinding.Pathfinder) Agent {
 	return Agent{Id: id, Pos: pos, pathfinder: pathfinder}
 }
 
-func (a Agent) ExecuteTask(world *pathfinding.World, task Task) CompletedTask {
+func (a Agent) ExecuteTask(world *world.World, task Task) CompletedTask {
 	switch t := task.(type) {
 	case MoveTask:
 		log.Printf("%v -> %v", a.Id, t)

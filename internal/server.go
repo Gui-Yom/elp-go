@@ -3,6 +3,7 @@ package internal
 import (
 	"elp-go/internal/pathfinding"
 	"elp-go/internal/queue"
+	"elp-go/internal/world"
 	"log"
 	"net"
 	"sync"
@@ -52,12 +53,12 @@ func handleRequestSeq(scen *Scenario, pathfinder pathfinding.Pathfinder) Scenari
 	var idCounter uint32
 
 	for i := 0; i < int(scen.NumAgents); i++ {
-		agent := NewAgent(idCounter, pathfinding.Pos(0, 0), pathfinder)
+		agent := NewAgent(idCounter, world.Pos(0, 0), pathfinder)
 		idCounter++
 		for j, task := range scen.Tasks {
 			task := task.(Task)
 			log.Printf("scheduling task %#v on agent %v", task, agent.Id)
-			result.Completed[j] = agent.ExecuteTask(scen.Carte, task)
+			result.Completed[j] = agent.ExecuteTask(scen.World, task)
 		}
 	}
 	return result
@@ -81,10 +82,10 @@ func handleRequestPar(scen *Scenario, pathfinder pathfinding.Pathfinder) Scenari
 			defer agentWg.Done()
 
 			// Initialize a new agent for this coroutine
-			agent := NewAgent(atomic.AddUint32(&idCounter, 1), pathfinding.Pos(0, 0), pathfinder)
+			agent := NewAgent(atomic.AddUint32(&idCounter, 1), world.Pos(0, 0), pathfinder)
 			for t := range tasks {
 				log.Printf("scheduling task %#v on agent %v", t, agent.Id)
-				completed <- agent.ExecuteTask(scen.Carte, t)
+				completed <- agent.ExecuteTask(scen.World, t)
 			}
 		}()
 	}

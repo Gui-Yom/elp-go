@@ -2,6 +2,7 @@ package pathfinding
 
 import (
 	"elp-go/internal/queue"
+	"elp-go/internal/world"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
@@ -10,48 +11,48 @@ import (
 // TESTS //
 
 func testPathfinderSimple(t *testing.T, pf Pathfinder) {
-	carte := NewMapFromString(`4x4
+	carte := world.NewMapFromString(`4x4
     
 xx  
     
     `)
 	log.Printf("map: %v", carte)
-	path, _ := pf.FindPath(carte, Position{X: 0}, Position{X: 3})
+	path, _ := pf.FindPath(carte, world.Position{X: 0}, world.Position{X: 3})
 	assert.NotNil(t, path, "A path should exist")
 }
 
 func testPathfinderMapFile(t *testing.T, pf Pathfinder) {
-	carte := NewMapFromFile("map0.map")
+	carte := world.NewMapFromFile("map0.map")
 	log.Printf("map: %v", carte)
-	path, _ := pf.FindPath(carte, Position{}, Position{X: 9, Y: 9})
+	path, _ := pf.FindPath(carte, world.Position{}, world.Position{X: 9, Y: 9})
 	assert.NotNil(t, path, "A path should exist")
 }
 
 func testPathfinderBig(t *testing.T, pf Pathfinder) {
-	carte := NewMapRandom(100, 100, 0.30, 42)
+	carte := world.NewMapRandom(100, 100, 0.30, 42)
 	log.Printf("map: %v", carte)
-	path, _ := pf.FindPath(carte, Position{}, Position{X: 98, Y: 97})
+	path, _ := pf.FindPath(carte, world.Position{}, world.Position{X: 98, Y: 97})
 	assert.NotNil(t, path, "A path should exist")
 }
 
 func testPathfinderBigger(t *testing.T, pf Pathfinder) {
-	carte := NewMapRandom(300, 300, 0.30, 42)
+	carte := world.NewMapRandom(300, 300, 0.30, 42)
 	//log.Printf("map: %v", carte)
-	path, _ := pf.FindPath(carte, Position{}, Position{X: 298, Y: 298})
+	path, _ := pf.FindPath(carte, world.Position{}, world.Position{X: 298, Y: 298})
 	assert.NotNil(t, path, "A path should exist")
 }
 
 func testPathfinderBiggger(t *testing.T, pf Pathfinder) {
-	carte := NewMapRandom(500, 500, 0.30, 42)
+	carte := world.NewMapRandom(500, 500, 0.30, 42)
 	//log.Printf("map: %v", carte)
-	path, _ := pf.FindPath(carte, Position{}, Position{X: 498, Y: 498})
+	path, _ := pf.FindPath(carte, world.Position{}, world.Position{X: 498, Y: 498})
 	assert.NotNil(t, path, "A path should exist")
 }
 
 func testPathfinderBiggest(t *testing.T, pf Pathfinder) {
-	carte := NewMapRandom(1000, 1000, 0.30, 42)
+	carte := world.NewMapRandom(1000, 1000, 0.30, 42)
 	//log.Printf("map: %v", carte)
-	path, _ := pf.FindPath(carte, Position{}, Position{X: 998, Y: 998})
+	path, _ := pf.FindPath(carte, world.Position{}, world.Position{X: 998, Y: 998})
 	assert.NotNil(t, path, "A path should exist")
 }
 
@@ -105,7 +106,7 @@ func TestAstarBiggest(t *testing.T) {
 
 // BENCHMARKS //
 
-func benchmarkPathfinder(pathfinder Pathfinder, carte *World, goal Position, b *testing.B) {
+func benchmarkPathfinder(pathfinder Pathfinder, carte *world.World, goal world.Position, b *testing.B) {
 	b.StopTimer()
 	b.ResetTimer()
 	var accDuration float64
@@ -113,7 +114,7 @@ func benchmarkPathfinder(pathfinder Pathfinder, carte *World, goal Position, b *
 	var accCost float64
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		_, stats := pathfinder.FindPath(carte, Position{}, goal)
+		_, stats := pathfinder.FindPath(carte, world.Position{}, goal)
 		accDuration += float64(stats.Duration.Microseconds())
 		accIterations += float64(stats.Iterations)
 		accCost += float64(stats.Cost)
@@ -127,79 +128,79 @@ func benchmarkPathfinder(pathfinder Pathfinder, carte *World, goal Position, b *
 func BenchmarkDijkstraLinked100(b *testing.B) {
 	benchmarkPathfinder(
 		NewDijkstra(true, queue.NewLinked),
-		NewMapRandom(100, 100, 0.3, 42),
-		Pos(97, 98),
+		world.NewMapRandom(100, 100, 0.3, 42),
+		world.Pos(97, 98),
 		b)
 }
 
 func BenchmarkDijkstraLinked1000(b *testing.B) {
 	benchmarkPathfinder(
 		NewDijkstra(true, queue.NewLinked),
-		NewMapRandom(1000, 1000, 0.2, 42),
-		Pos(998, 998),
+		world.NewMapRandom(1000, 1000, 0.2, 42),
+		world.Pos(998, 998),
 		b)
 }
 
 func BenchmarkDijkstraPairing100(b *testing.B) {
 	benchmarkPathfinder(
 		NewDijkstra(true, queue.NewPairing),
-		NewMapRandom(100, 100, 0.3, 42),
-		Pos(98, 97),
+		world.NewMapRandom(100, 100, 0.3, 42),
+		world.Pos(98, 97),
 		b)
 }
 
 func BenchmarkDijkstraPairing300(b *testing.B) {
 	benchmarkPathfinder(
 		NewDijkstra(true, queue.NewPairing),
-		NewMapRandom(300, 300, 0.2, 42),
-		Pos(298, 298),
+		world.NewMapRandom(300, 300, 0.2, 42),
+		world.Pos(298, 298),
 		b)
 }
 
 func BenchmarkAstarLinked100(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewLinked),
-		NewMapRandom(100, 100, 0.3, 42),
-		Pos(98, 97),
+		world.NewMapRandom(100, 100, 0.3, 42),
+		world.Pos(98, 97),
 		b)
 }
 
 func BenchmarkAstarLinked1000(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewLinked),
-		NewMapRandom(1000, 1000, 0.2, 42),
-		Pos(998, 998),
+		world.NewMapRandom(1000, 1000, 0.2, 42),
+		world.Pos(998, 998),
 		b)
 }
 
 func BenchmarkAstarLinked10000(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewLinked),
-		NewMapRandom(10000, 10000, 0.2, 42),
-		Pos(9998, 9998),
+		world.NewMapRandom(10000, 10000, 0.2, 42),
+		world.Pos(9998, 9998),
 		b)
 }
 
 func BenchmarkAstarPairing100(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewPairing),
-		NewMapRandom(100, 100, 0.3, 42),
-		Pos(98, 97),
+		world.NewMapRandom(100, 100, 0.3, 42),
+		world.Pos(98, 97),
 		b)
 }
 
 func BenchmarkAstarPairing300(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewPairing),
-		NewMapRandom(300, 300, 0.2, 42),
-		Pos(298, 298),
+		world.NewMapRandom(300, 300, 0.2, 42),
+		world.Pos(298, 298),
 		b)
 }
 
 func BenchmarkAstarPairing1000(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewPairing),
-		NewMapRandom(1000, 1000, 0.2, 42),
-		Pos(998, 998),
+		world.NewMapRandom(1000, 1000, 0.2, 42),
+		world.Pos(998, 998),
 		b)
 }
