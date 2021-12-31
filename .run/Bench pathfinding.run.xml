@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Bench pathfinding" type="GoTestRunConfiguration" factoryName="Go Test">
-    <output_file path="$PROJECT_DIR$/target/bench_pathfinding.log" is_save="true" />
+  <configuration default="false" name="Bench pathfinding (Astar Linked 1000)" type="GoTestRunConfiguration" factoryName="Go Test">
+    <output_file path="$PROJECT_DIR$/target/pathfinding_al1000.log" is_save="true" />
     <module name="elp-go" />
     <working_directory value="$PROJECT_DIR$" />
-    <parameters value="-test.benchtime 5s -test.benchmem -test.outputdir target -test.cpuprofile pathfinding.cpu.prof -test.memprofile pathfinding.mem.prof" />
+    <parameters value="-test.bench AstarLinked1000$ -test.benchtime 20x -test.benchmem" />
     <kind value="PACKAGE" />
     <package value="elp-go/internal/pathfinding" />
     <directory value="$PROJECT_DIR$" />

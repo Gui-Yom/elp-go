@@ -132,22 +132,6 @@ func BenchmarkDijkstraLinked100(b *testing.B) {
 		b)
 }
 
-func BenchmarkDijkstraLinked300(b *testing.B) {
-	benchmarkPathfinder(
-		NewDijkstra(true, queue.NewLinked),
-		NewMapRandom(300, 300, 0.2, 42),
-		Pos(298, 298),
-		b)
-}
-
-func BenchmarkDijkstraLinked500(b *testing.B) {
-	benchmarkPathfinder(
-		NewDijkstra(true, queue.NewLinked),
-		NewMapRandom(500, 500, 0.2, 42),
-		Pos(498, 498),
-		b)
-}
-
 func BenchmarkDijkstraLinked1000(b *testing.B) {
 	benchmarkPathfinder(
 		NewDijkstra(true, queue.NewLinked),
@@ -155,15 +139,6 @@ func BenchmarkDijkstraLinked1000(b *testing.B) {
 		Pos(998, 998),
 		b)
 }
-
-/*
-func BenchmarkDijkstraLinked10000(b *testing.B) {
-	benchmarkPathfinder(
-		NewDijkstra(true, queue.NewLinked),
-		NewMapRandom(10000, 10000, 0.2, 42),
-		Pos(9998, 9998),
-		b)
-}*/
 
 func BenchmarkDijkstraPairing100(b *testing.B) {
 	benchmarkPathfinder(
@@ -181,36 +156,11 @@ func BenchmarkDijkstraPairing300(b *testing.B) {
 		b)
 }
 
-/*
-func BenchmarkDijkstraPairing500(b *testing.B) {
-	benchmarkPathfinder(
-		NewDijkstra(true, queue.NewPairing),
-		NewMapRandom(500, 500, 0.2, 42),
-		Pos(498, 498),
-		b)
-}*/
-
 func BenchmarkAstarLinked100(b *testing.B) {
 	benchmarkPathfinder(
 		NewAstar(true, EuclideanSq, queue.NewLinked),
 		NewMapRandom(100, 100, 0.3, 42),
 		Pos(98, 97),
-		b)
-}
-
-func BenchmarkAstarLinked300(b *testing.B) {
-	benchmarkPathfinder(
-		NewAstar(true, EuclideanSq, queue.NewLinked),
-		NewMapRandom(300, 300, 0.2, 42),
-		Pos(298, 298),
-		b)
-}
-
-func BenchmarkAstarLinked500(b *testing.B) {
-	benchmarkPathfinder(
-		NewAstar(true, EuclideanSq, queue.NewLinked),
-		NewMapRandom(500, 500, 0.2, 42),
-		Pos(498, 498),
 		b)
 }
 
@@ -243,14 +193,6 @@ func BenchmarkAstarPairing300(b *testing.B) {
 		NewAstar(true, EuclideanSq, queue.NewPairing),
 		NewMapRandom(300, 300, 0.2, 42),
 		Pos(298, 298),
-		b)
-}
-
-func BenchmarkAstarPairing500(b *testing.B) {
-	benchmarkPathfinder(
-		NewAstar(true, EuclideanSq, queue.NewPairing),
-		NewMapRandom(500, 500, 0.2, 42),
-		Pos(498, 498),
 		b)
 }
 

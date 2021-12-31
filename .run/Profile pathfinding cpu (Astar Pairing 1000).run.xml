@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Profile pathfinding cpu (Astar Pairing 1000)" type="GoTestRunConfiguration" factoryName="Go Test">
+    <output_file path="$PROJECT_DIR$/target/bench_pathfinding.log" />
+    <module name="elp-go" />
+    <working_directory value="$PROJECT_DIR$" />
+    <parameters value="-test.bench AstarPairing1000$ -test.benchtime 20s -test.outputdir target -test.cpuprofile pathfinding.ap1000.cpu.prof" />
+    <kind value="PACKAGE" />
+    <package value="elp-go/internal/pathfinding" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <framework value="gobench" />
+    <method v="2" />
+  </configuration>
+</component>
