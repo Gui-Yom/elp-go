@@ -159,6 +159,8 @@ MEM:
 | AstarLinked1000    | 1.63MB ± 0%    | 0.46MB ± 0%    | -71.57% |
 | AstarLinked10000   | 14.2MB ± 0%    | 4.1MB ± 0%     | -70.85% |
 
+![profiler graph](profiler_graph_al1000.png)
+
 #### Modifications
 
 - Nouvelle impl HashMap Position -> Position et Position -> Coût (int64 -> int64)

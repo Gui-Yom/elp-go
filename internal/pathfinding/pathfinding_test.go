@@ -204,3 +204,27 @@ func BenchmarkAstarPairing1000(b *testing.B) {
 		world.Pos(998, 998),
 		b)
 }
+
+func BenchmarkAstarHeap300(b *testing.B) {
+	benchmarkPathfinder(
+		NewAstar(true, EuclideanSq, queue.NewHeap),
+		world.NewWorldRandom(300, 300, 0.2, 42),
+		world.Pos(298, 298),
+		b)
+}
+
+func BenchmarkAstarHeap1000(b *testing.B) {
+	benchmarkPathfinder(
+		NewAstar(true, EuclideanSq, queue.NewHeap),
+		world.NewWorldRandom(1000, 1000, 0.2, 42),
+		world.Pos(998, 998),
+		b)
+}
+
+func BenchmarkAstarHeap10000(b *testing.B) {
+	benchmarkPathfinder(
+		NewAstar(true, EuclideanSq, queue.NewHeap),
+		world.NewWorldRandom(10000, 10000, 0.2, 42),
+		world.Pos(9998, 9998),
+		b)
+}

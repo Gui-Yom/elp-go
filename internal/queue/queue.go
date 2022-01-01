@@ -23,3 +23,9 @@ func NewPairing() PriorityQueue {
 func NewLinked() PriorityQueue {
 	return &linkedQueue{}
 }
+
+// NewHeap Creates a new priority queue based a heap.
+func NewHeap() PriorityQueue {
+	tmp := make(heapQueue, 0, 16)
+	return &tmp
+}

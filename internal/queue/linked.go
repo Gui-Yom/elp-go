@@ -21,6 +21,8 @@ func (list *linkedQueue) Empty() bool {
 	return list.root == nil
 }
 
+// Push Insert an item
+// O(n)
 func (list *linkedQueue) Push(pos world.Position, cost float64) {
 	newNode := lqnode{
 		item: pos,
@@ -50,6 +52,8 @@ func (list *linkedQueue) Push(pos world.Position, cost float64) {
 	pred.next = &newNode
 }
 
+// Pop retrieve an item
+// O(1)
 func (list *linkedQueue) Pop() world.Position {
 	if list.root == nil {
 		panic("Tried to Pop() with no items")
