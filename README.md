@@ -188,7 +188,7 @@ Serveur (pour chaque client) :
 
 https://doi.org/10.1137/1.9781611973198.7
 
-https://github.com/brentp/intintmap
+Fastmap modifiée de : https://github.com/brentp/intintmap, impl originale (java) : https://github.com/mikvor/hashmapTest
 
 ## A faire
 

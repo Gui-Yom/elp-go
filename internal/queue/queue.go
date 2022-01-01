@@ -1,7 +1,6 @@
 package queue
 
 import (
-	"container/list"
 	"elp-go/internal/world"
 )
 
@@ -22,5 +21,5 @@ func NewPairing() PriorityQueue {
 
 // NewLinked Creates a new priority queue based a sorted linked list insert.
 func NewLinked() PriorityQueue {
-	return linkedQueue{items: list.New()}
+	return &linkedQueue{}
 }
