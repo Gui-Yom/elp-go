@@ -99,29 +99,34 @@ func (w *World) GetCost(p Position) (cost float64) {
 	return cost
 }
 
+// This should be const but it isn't
+var offsets8 = []Position{
+	{X: -1, Y: 1}, {Y: 1}, {X: 1, Y: 1},
+	{X: -1}, {X: 1},
+	{X: -1, Y: -1}, {Y: -1}, {X: 1, Y: -1}}
+
+var offsets4 = []Position{{X: 1}, {Y: 1}, {X: -1}, {Y: -1}}
+
 // GetNeighbors returns traversable tiles around position (x, y)
-func (w *World) GetNeighbors(p Position, diagonal bool) (pos []Position) {
+// neighbors is an out param, presized to 8
+// This may probably be calculated ahead of time since the world won't change.
+func (w *World) GetNeighbors(p Position, diagonal bool, neighbors []Position) int {
 	// No functional programming, thanks Go
-	// I wonder if there is a way to not allocate, this function gets called for each tile of our world.
-	// This may probably be calculated ahead of time since the world won't change.
 	var offsets []Position
 	if diagonal {
-		pos = make([]Position, 0, 8)
-		offsets = []Position{
-			{X: -1, Y: 1}, {Y: 1}, {X: 1, Y: 1},
-			{X: -1}, {X: 1},
-			{X: -1, Y: -1}, {Y: -1}, {X: 1, Y: -1}}
+		offsets = offsets8
 	} else {
-		pos = make([]Position, 0, 4)
-		offsets = []Position{{X: 1}, {Y: 1}, {X: -1}, {Y: -1}}
+		offsets = offsets4
 	}
+	i := 0
 	for _, offset := range offsets {
 		n := p.Plus(offset)
 		if w.IsInBounds(n) && w.GetCost(n) > 0 {
-			pos = append(pos, n)
+			neighbors[i] = n
+			i++
 		}
 	}
-	return pos
+	return i
 }
 
 func NewWorldFromFile(name string) *World {

@@ -123,9 +123,9 @@ func benchmarkPathfinder(pathfinder Pathfinder, carte *world.World, goal world.P
 	}
 	b.StopTimer()
 	b.ReportMetric(accDuration/float64(b.N), "µs/op")
-	b.ReportMetric(accIterations/float64(b.N), "iter/op")
-	b.ReportMetric(accCost/float64(b.N), "cost/op")
-	b.ReportMetric(presizeAcc/float64(b.N), "presizeAccuracy/op")
+	b.ReportMetric(accIterations/float64(b.N), "iter")
+	b.ReportMetric(accCost/float64(b.N), "cost")
+	b.ReportMetric(presizeAcc/float64(b.N), "presizeAccuracy%")
 }
 
 func BenchmarkDijkstraLinked100(b *testing.B) {

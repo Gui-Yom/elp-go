@@ -33,6 +33,8 @@ func (astar Astar) FindPath(w *world.World, start world.Position, goal world.Pos
 	var iter uint
 	var curr world.Position
 
+	neighbors := make([]world.Position, 8)
+
 	for !frontier.Empty() {
 		curr = frontier.Pop()
 
@@ -42,7 +44,9 @@ func (astar Astar) FindPath(w *world.World, start world.Position, goal world.Pos
 
 		iter++
 
-		for _, node := range w.GetNeighbors(curr, astar.Diagonal) {
+		size := w.GetNeighbors(curr, astar.Diagonal, neighbors)
+		for i := 0; i < size; i++ {
+			node := neighbors[i]
 			tileCost := w.GetCost(node)
 			currCost, _ := costs.GetCost(curr)
 			newCost := currCost + tileCost

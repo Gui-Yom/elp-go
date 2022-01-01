@@ -33,6 +33,8 @@ func (dijk Dijkstra) FindPath(w *world.World, start world.Position, goal world.P
 	var iter uint
 	var curr world.Position
 
+	neighbors := make([]world.Position, 8)
+
 	for !frontier.Empty() {
 		curr = frontier.Pop()
 
@@ -42,7 +44,9 @@ func (dijk Dijkstra) FindPath(w *world.World, start world.Position, goal world.P
 
 		iter++
 
-		for _, node := range w.GetNeighbors(curr, dijk.Diagonal) {
+		size := w.GetNeighbors(curr, dijk.Diagonal, neighbors)
+		for i := 0; i < size; i++ {
+			node := neighbors[i]
 			tileCost := w.GetCost(node)
 			currCost, _ := costs.GetCost(curr)
 			newCost := currCost + tileCost

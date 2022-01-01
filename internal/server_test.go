@@ -40,7 +40,7 @@ func TestHandleRequestPar(t *testing.T) {
 	testRequestHandler(t, handleRequestPar)
 }
 
-func benchmarkRequestHandler(b *testing.B, handler RequestHandler) {
+func benchmarkRequestHandler(b *testing.B, handler RequestHandler, numAgents int) {
 	b.StopTimer()
 	b.ResetTimer()
 	pathfinder := pathfinding.NewAstar(true, pathfinding.EuclideanSq, queue.NewLinked)
@@ -50,7 +50,7 @@ func benchmarkRequestHandler(b *testing.B, handler RequestHandler) {
 		World:            w,
 		DiagonalMovement: true,
 		Tasks:            genTasks(int(numTasks), w),
-		NumAgents:        6,
+		NumAgents:        numAgents,
 	}
 	var accDuration float64
 	var accIterations float64
@@ -69,15 +69,32 @@ func benchmarkRequestHandler(b *testing.B, handler RequestHandler) {
 	}
 	b.StopTimer()
 	b.ReportMetric(accDuration/float64(b.N)/numTasks, "µs/op")
-	b.ReportMetric(accIterations/float64(b.N)/numTasks, "iter/op")
-	b.ReportMetric(accCost/float64(b.N)/numTasks, "cost/op")
-	b.ReportMetric(presizeAcc/float64(b.N)/numTasks, "presizeAccuracy/op")
+	b.ReportMetric(accIterations/float64(b.N)/numTasks, "iter")
+	b.ReportMetric(accCost/float64(b.N)/numTasks, "cost")
+	b.ReportMetric(presizeAcc/float64(b.N)/numTasks, "presizeAccuracy%")
 }
 
 func BenchmarkSeq(b *testing.B) {
-	benchmarkRequestHandler(b, handleRequestSeq)
+	benchmarkRequestHandler(b, handleRequestSeq, 4)
 }
 
-func BenchmarkPar(b *testing.B) {
-	benchmarkRequestHandler(b, handleRequestPar)
+/*
+func BenchmarkPar1(b *testing.B) {
+	benchmarkRequestHandler(b, handleRequestPar, 1)
+}*/
+
+func BenchmarkPar2(b *testing.B) {
+	benchmarkRequestHandler(b, handleRequestPar, 2)
+}
+
+func BenchmarkPar4(b *testing.B) {
+	benchmarkRequestHandler(b, handleRequestPar, 4)
+}
+
+func BenchmarkPar6(b *testing.B) {
+	benchmarkRequestHandler(b, handleRequestPar, 6)
+}
+
+func BenchmarkPar8(b *testing.B) {
+	benchmarkRequestHandler(b, handleRequestPar, 8)
 }
