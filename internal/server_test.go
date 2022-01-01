@@ -45,16 +45,33 @@ func benchmarkRequestHandler(b *testing.B, handler RequestHandler) {
 	b.ResetTimer()
 	pathfinder := pathfinding.NewAstar(true, pathfinding.EuclideanSq, queue.NewLinked)
 	w := world.NewWorldRandom(1000, 1000, 0.2, 42)
+	numTasks := 256.0
 	scenario := Scenario{
 		World:            w,
 		DiagonalMovement: true,
-		Tasks:            genTasks(256, w),
+		Tasks:            genTasks(int(numTasks), w),
 		NumAgents:        6,
 	}
-	b.StartTimer()
+	var accDuration float64
+	var accIterations float64
+	var accCost float64
+	var presizeAcc float64
 	for i := 0; i < b.N; i++ {
-		handler(&scenario, pathfinder)
+		b.StartTimer()
+		result := handler(&scenario, pathfinder)
+		b.StopTimer()
+		for _, t := range result.Completed {
+			accDuration += float64(t.Stats.Duration.Microseconds())
+			accIterations += float64(t.Stats.Iterations)
+			accCost += t.Stats.Cost
+			presizeAcc += t.Stats.PresizeAccuracy
+		}
 	}
+	b.StopTimer()
+	b.ReportMetric(accDuration/float64(b.N)/numTasks, "µs/op")
+	b.ReportMetric(accIterations/float64(b.N)/numTasks, "iter/op")
+	b.ReportMetric(accCost/float64(b.N)/numTasks, "cost/op")
+	b.ReportMetric(presizeAcc/float64(b.N)/numTasks, "presizeAccuracy/op")
 }
 
 func BenchmarkSeq(b *testing.B) {

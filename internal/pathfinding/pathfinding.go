@@ -27,6 +27,8 @@ type Stats struct {
 	Duration time.Duration
 	// Total cost of the found path
 	Cost float64
+	// Presize accuracy (best is close to 100%)
+	PresizeAccuracy float64
 }
 
 func (s Stats) String() string {

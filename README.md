@@ -133,6 +133,7 @@ On note aussi un coût non négligeable dû au boxing (interface{}) des ifaces.
    gestion de la mémoire en sachant la taille du problème afin de limiter les allocs.
 2. Précalcul des voisins pour éviter les allocs répétées au runtime. Pourrait quadrupler la taille en mémoire donc
    moyen.
+3. Les maps costs et parentChain pourraient être la même map (Position -> (Position, Coût)) pour économiser de la place
 
 ### Après profilage
 
@@ -189,6 +190,7 @@ MEM:
         - `pathfinding.go`: Interfaces et utilités
     - `queue/`
         - `queue.go`: Interface priority queue
+        - `heap.go`: Queue basée sur un heap
         - `linked.go`: Queue basée sur une linked list
         - `pairing.go`: Queue basée sur un pairing heap
     - `world/`

@@ -112,17 +112,20 @@ func benchmarkPathfinder(pathfinder Pathfinder, carte *world.World, goal world.P
 	var accDuration float64
 	var accIterations float64
 	var accCost float64
+	var presizeAcc float64
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		_, stats := pathfinder.FindPath(carte, world.Position{}, goal)
 		accDuration += float64(stats.Duration.Microseconds())
 		accIterations += float64(stats.Iterations)
-		accCost += float64(stats.Cost)
+		accCost += stats.Cost
+		presizeAcc += stats.PresizeAccuracy
 	}
 	b.StopTimer()
 	b.ReportMetric(accDuration/float64(b.N), "µs/op")
 	b.ReportMetric(accIterations/float64(b.N), "iter/op")
 	b.ReportMetric(accCost/float64(b.N), "cost/op")
+	b.ReportMetric(presizeAcc/float64(b.N), "presizeAccuracy/op")
 }
 
 func BenchmarkDijkstraLinked100(b *testing.B) {

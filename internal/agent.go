@@ -7,22 +7,22 @@ import (
 )
 
 type Agent struct {
-	Id         uint32
+	Id         uint
 	Pos        world.Position
 	pathfinder pathfinding.Pathfinder
 }
 
-func NewAgent(id uint32, pos world.Position, pathfinder pathfinding.Pathfinder) Agent {
+func NewAgent(id uint, pos world.Position, pathfinder pathfinding.Pathfinder) Agent {
 	return Agent{Id: id, Pos: pos, pathfinder: pathfinder}
 }
 
-func (a Agent) ExecuteTask(world *world.World, task Task) CompletedTask {
+func (a *Agent) ExecuteTask(world *world.World, task Task) CompletedTask {
 	switch t := task.(type) {
 	case MoveTask:
 		//log.Printf("%v -> %v", a.Id, t)
-		path, _ := a.pathfinder.FindPath(world, a.Pos, t.Goal)
-		// TODO(guillaume) pass stats
-		return CompletedTask{AgentId: a.Id, Path: path}
+		path, stats := a.pathfinder.FindPath(world, a.Pos, t.Goal)
+		a.Pos = t.Goal
+		return CompletedTask{AgentId: a.Id, Path: path, Stats: stats}
 	default:
 		log.Fatalf("Unimplemented task : %v", t)
 	}

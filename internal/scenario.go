@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"elp-go/internal/pathfinding"
 	"elp-go/internal/world"
 	"fmt"
 )
@@ -9,12 +10,13 @@ type Scenario struct {
 	World            *world.World
 	DiagonalMovement bool
 	Tasks            []interface{}
-	NumAgents        uint32
+	NumAgents        int
 }
 
 type CompletedTask struct {
-	AgentId uint32
+	AgentId uint
 	Path    []world.Position
+	Stats   pathfinding.Stats
 }
 
 type ScenarioResult struct {

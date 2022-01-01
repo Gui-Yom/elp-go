@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"sync"
-	"sync/atomic"
 )
 
 // StartServer Main func when running a server
@@ -60,11 +59,9 @@ func handleRequestSeq(scen *Scenario, pathfinder pathfinding.Pathfinder) Scenari
 		close(taskQueue)
 	}()
 
-	var idCounter uint32
 	agents := make([]Agent, scen.NumAgents)
 	for i := range agents {
-		agents[i] = NewAgent(idCounter, world.Pos(0, 0), pathfinder)
-		idCounter++
+		agents[i] = NewAgent(uint(i), world.Pos(0, 0), pathfinder)
 	}
 
 	// Dispatch tasks to agent (round-robin)
@@ -86,16 +83,14 @@ func handleRequestPar(scen *Scenario, pathfinder pathfinding.Pathfinder) Scenari
 	// Task results, multi producers/single consumer
 	completed := make(chan CompletedTask, 10)
 
-	var idCounter uint32
-
-	for i := 0; i < int(scen.NumAgents); i++ {
+	for i := 0; i < scen.NumAgents; i++ {
+		i := i // Apparently : Loop variables captured by 'func' literals in 'go' statements might have unexpected values
 		go func() {
 			agentWg.Add(1)
 			// Release the lock
 			defer agentWg.Done()
 
-			// Initialize a new agent for this coroutine
-			agent := NewAgent(atomic.AddUint32(&idCounter, 1), world.Pos(0, 0), pathfinder)
+			agent := NewAgent(uint(i), world.Pos(0, 0), pathfinder)
 			for t := range tasks {
 				//log.Printf("scheduling task %#v on agent %v", t, agent.Id)
 				completed <- agent.ExecuteTask(scen.World, t)

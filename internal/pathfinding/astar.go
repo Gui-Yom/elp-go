@@ -56,8 +56,8 @@ func (astar Astar) FindPath(w *world.World, start world.Position, goal world.Pos
 	}
 	//fmt.Printf("costLen: %v, chainLen: %v\n", len(costs), len(parentChain))
 	if curr != goal {
-		return nil, Stats{Iterations: iter, Duration: time.Now().Sub(startTime)}
+		return nil, Stats{Iterations: iter, Duration: time.Now().Sub(startTime), PresizeAccuracy: float64(costs.Size()) / float64(presize) * 100}
 	}
 	path := makePath(parentChain, start, goal)
-	return path, Stats{Iterations: iter, Duration: time.Now().Sub(startTime), Cost: pathCost(w, path)}
+	return path, Stats{Iterations: iter, Duration: time.Now().Sub(startTime), Cost: pathCost(w, path), PresizeAccuracy: float64(costs.Size()) / float64(presize) * 100}
 }
