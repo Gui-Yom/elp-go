@@ -19,7 +19,7 @@ func NewAgent(id uint32, pos world.Position, pathfinder pathfinding.Pathfinder) 
 func (a Agent) ExecuteTask(world *world.World, task Task) CompletedTask {
 	switch t := task.(type) {
 	case MoveTask:
-		log.Printf("%v -> %v", a.Id, t)
+		//log.Printf("%v -> %v", a.Id, t)
 		path, _ := a.pathfinder.FindPath(world, a.Pos, t.Goal)
 		// TODO(guillaume) pass stats
 		return CompletedTask{AgentId: a.Id, Path: path}

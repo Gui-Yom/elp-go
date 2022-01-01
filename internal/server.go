@@ -12,22 +12,23 @@ import (
 
 // StartServer Main func when running a server
 func StartServer(port int) {
-	// listen on the port port
+	// listen on the port
 	server, err := net.ListenTCP("tcp", &net.TCPAddr{Port: port})
 	if err != nil {
 		log.Fatal(err)
 	}
 	for {
-		// we accept the incoming connexions on the port port
+		// we accept the incoming connexions on the port
 		conn, err := server.AcceptTCP()
 		if err != nil {
 			log.Fatal(err)
 		}
 		client := NewRemote(conn)
+		log.Printf("New connection from %v\n", client)
 		// Continue to process other client requests
 		go func() {
 			defer client.Close()
-			// A client may make multiple requests with a single connection
+			// A client may make multiple requests within a single connection
 			// but not in parallel
 			for {
 				var scenario Scenario
@@ -37,7 +38,8 @@ func StartServer(port int) {
 					//log.Fatal(err)
 					break
 				}
-				result := handleRequestSeq(&scenario, pathfinding.NewDijkstra(true, queue.NewLinked))
+				log.Printf("New scenario compute request from %v\n", client)
+				result := handleRequestSeq(&scenario, pathfinding.NewAstar(true, pathfinding.EuclideanSq, queue.NewLinked))
 				log.Printf("sending result : %v", result)
 				client.Send(result)
 			}
@@ -48,18 +50,29 @@ func StartServer(port int) {
 type RequestHandler func(scenario *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult
 
 func handleRequestSeq(scen *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult { //test sans goroutine
-	result := ScenarioResult{Completed: make([]CompletedTask, len(scen.Tasks))} //make([]CompletedTask, len(scen.Tasks)) : creation of a tab with a length = scen.Tasks
+	result := ScenarioResult{Completed: make([]CompletedTask, len(scen.Tasks))}
+
+	taskQueue := make(chan Task)
+	go func() { // Supply the task queue
+		for _, t := range scen.Tasks {
+			taskQueue <- t.(Task)
+		}
+		close(taskQueue)
+	}()
 
 	var idCounter uint32
-
-	for i := 0; i < int(scen.NumAgents); i++ {
-		agent := NewAgent(idCounter, world.Pos(0, 0), pathfinder)
+	agents := make([]Agent, scen.NumAgents)
+	for i := range agents {
+		agents[i] = NewAgent(idCounter, world.Pos(0, 0), pathfinder)
 		idCounter++
-		for j, task := range scen.Tasks {
-			task := task.(Task)
-			log.Printf("scheduling task %#v on agent %v", task, agent.Id)
-			result.Completed[j] = agent.ExecuteTask(scen.World, task)
-		}
+	}
+
+	// Dispatch tasks to agent (round-robin)
+	index := 0
+	for task := range taskQueue {
+		//log.Printf("scheduling task %#v on agent %v", task, agents[index%int(scen.NumAgents)].Id)
+		result.Completed[index] = agents[index%int(scen.NumAgents)].ExecuteTask(scen.World, task)
+		index++
 	}
 	return result
 }
@@ -84,7 +97,7 @@ func handleRequestPar(scen *Scenario, pathfinder pathfinding.Pathfinder) Scenari
 			// Initialize a new agent for this coroutine
 			agent := NewAgent(atomic.AddUint32(&idCounter, 1), world.Pos(0, 0), pathfinder)
 			for t := range tasks {
-				log.Printf("scheduling task %#v on agent %v", t, agent.Id)
+				//log.Printf("scheduling task %#v on agent %v", t, agent.Id)
 				completed <- agent.ExecuteTask(scen.World, t)
 			}
 		}()

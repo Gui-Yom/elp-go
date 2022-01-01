@@ -50,3 +50,7 @@ func (rem *Remote) Recv(v interface{}) error {
 func (rem *Remote) Close() error {
 	return rem.conn.Close()
 }
+
+func (rem *Remote) String() string {
+	return rem.conn.RemoteAddr().String()
+}
