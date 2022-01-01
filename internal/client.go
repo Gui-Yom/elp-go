@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"bufio"
 	"elp-go/internal/world"
 	"fmt"
 	"gioui.org/app"
@@ -11,37 +10,13 @@ import (
 	"gioui.org/unit"
 	"github.com/ajstarks/giocanvas"
 	"image"
+	"image/color"
 	"log"
 	"net"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 )
-
-//fonction qui permet de récupérer un input
-func getInput(prompt string, r *bufio.Reader) (string, error) {
-	fmt.Print(prompt)
-	input, err := r.ReadString('\n')
-
-	return strings.TrimSpace(input), err
-}
-
-func fillMyList(l []Task) {
-	reader := bufio.NewReader(os.Stdin)
-	opt, _ := getInput("Choose option (a -add a task, -s save the list): ", reader)
-
-	switch opt {
-	case "a":
-		fmt.Println("you choose to add a task")
-		fillMyList(l)
-	case "s":
-		fmt.Println("you choose to save the list", l)
-	default:
-		fmt.Println("that was not a valid option...")
-		fillMyList(l)
-	}
-}
 
 func mapFromArgs(args []string) *world.World {
 	parseError := func(value, name, type_ string) {
@@ -93,19 +68,16 @@ func mapFromArgs(args []string) *world.World {
 }
 
 // StartClient Main func when running a client
-func StartClient(addr net.IP, port int, gui bool, connect bool, mapArgs []string) {
+func StartClient(addr net.IP, port int, gui bool, connect bool, filename string) {
 
-	//myListTasks := []internal.Task{}
-	//fillMyList(myListTasks)
+	scenario := LoadFromFile(filename)
 
-	carte := mapFromArgs(mapArgs)
-	tasks := []interface{}{MoveTask{Goal: world.Pos(16, 16)}}
-	scen := Scenario{World: carte, DiagonalMovement: true, NumAgents: 1, Tasks: tasks}
-
+	// Mutex to make the main goroutine wait on the connect
 	wait := sync.Mutex{}
 	if connect {
 		wait.Lock()
 		go func() {
+			// Unlock when we receive the response
 			defer wait.Unlock()
 
 			conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: addr, Port: port})
@@ -116,7 +88,7 @@ func StartClient(addr net.IP, port int, gui bool, connect bool, mapArgs []string
 			client := NewRemote(conn)
 			defer client.Close()
 
-			err = client.Send(&scen)
+			err = client.Send(&scenario)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -129,13 +101,14 @@ func StartClient(addr net.IP, port int, gui bool, connect bool, mapArgs []string
 	}
 
 	if gui {
-		showScenario(&scen)
+		// This blocks until we close the window
+		showScenario(&scenario)
 	}
-	// This effectively waits for the goroutine to end
+	// This waits for the connect goroutine to unlock
 	wait.Lock()
 }
 
-// showScenario Display the given scenario in a window
+// showScenario Display the given scenario in a gui
 func showScenario(scen *Scenario) {
 	window := app.NewWindow(app.Title("elp-go"), app.Size(unit.Px(720), unit.Px(720)))
 
@@ -145,6 +118,8 @@ func showScenario(scen *Scenario) {
 	black := giocanvas.ColorLookup("black")
 	white := giocanvas.ColorLookup("white")
 	red := giocanvas.ColorLookup("red")
+	sand := color.NRGBA{R: 255, G: 203, B: 107, A: 255}
+	belt := color.NRGBA{R: 80, G: 96, B: 88, A: 255}
 
 	inputTag := new(bool)
 
@@ -189,6 +164,10 @@ func showScenario(scen *Scenario) {
 					case world.TILE_EMPTY:
 					case world.TILE_WALL:
 						canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, black)
+					case world.TILE_SAND:
+						canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, sand)
+					case world.TILE_CONVEYOR_BELT:
+						canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, belt)
 					default:
 						canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, red)
 					}

@@ -38,8 +38,8 @@ func StartServer(port int) {
 					break
 				}
 				log.Printf("New scenario compute request from %v\n", client)
-				result := handleRequestSeq(&scenario, pathfinding.NewAstar(true, pathfinding.EuclideanSq, queue.NewLinked))
-				log.Printf("sending result : %v", result)
+				result := handleRequestPar(&scenario, pathfinding.NewAstar(true, pathfinding.EuclideanSq, queue.NewLinked))
+				//log.Printf("sending result : %v", result)
 				client.Send(result)
 			}
 		}()
@@ -48,6 +48,7 @@ func StartServer(port int) {
 
 type RequestHandler func(scenario *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult
 
+// Handle the scenario request sequentially
 func handleRequestSeq(scen *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult { //test sans goroutine
 	result := ScenarioResult{Completed: make([]CompletedTask, len(scen.Tasks))}
 
@@ -74,6 +75,7 @@ func handleRequestSeq(scen *Scenario, pathfinder pathfinding.Pathfinder) Scenari
 	return result
 }
 
+// Handle scenario request in parallel. Give each agent its goroutine.
 func handleRequestPar(scen *Scenario, pathfinder pathfinding.Pathfinder) ScenarioResult { //test avec goroutine
 	// WaitGroup for all computing goroutines
 	agentWg := sync.WaitGroup{}
@@ -98,6 +100,7 @@ func handleRequestPar(scen *Scenario, pathfinder pathfinding.Pathfinder) Scenari
 		}()
 	}
 	go func() {
+		// Dispatch all tasks
 		for _, t := range scen.Tasks {
 			tasks <- t.(Task)
 		}
@@ -110,7 +113,7 @@ func handleRequestPar(scen *Scenario, pathfinder pathfinding.Pathfinder) Scenari
 
 	compTasks := make([]CompletedTask, len(scen.Tasks))
 	i := 0
-	for c := range completed {
+	for c := range completed { // Wait for all results
 		compTasks[i] = c
 		i++
 	}

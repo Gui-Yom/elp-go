@@ -1,9 +1,12 @@
 package internal
 
 import (
+	"bufio"
 	"elp-go/internal/pathfinding"
 	"elp-go/internal/world"
 	"fmt"
+	"log"
+	"os"
 )
 
 type Scenario struct {
@@ -11,6 +14,24 @@ type Scenario struct {
 	DiagonalMovement bool
 	Tasks            []interface{}
 	NumAgents        int
+}
+
+func LoadFromFile(filename string) Scenario {
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	ok := scanner.Scan()
+	if !ok {
+		panic("expected 'map <mapname>'")
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 type CompletedTask struct {

@@ -40,21 +40,14 @@ type Tile struct {
 var (
 	TILE_EMPTY         = &Tile{Id: ' ', Cost: 1}
 	TILE_WALL          = &Tile{Id: 'x', Cost: -1}
-	TILE_GOAL          = &Tile{Id: 'G', Cost: 1}
-	TILE_CONVEYOR_BELT = &Tile{Id: 'C', Cost: 0.5}
-	TILE_STAIRS        = &Tile{Id: '[', Cost: 2}
-	TILE_LADDER        = &Tile{Id: '#', Cost: 2}
-	TILE_SLIPPERY_ROCK = &Tile{Id: '(', Cost: 3}
-	TILE_HILL          = &Tile{Id: 'H', Cost: 3}
-	TILE_STREAM        = &Tile{Id: '~', Cost: 4}
-	TILE_HOLE          = &Tile{Id: 'o', Cost: 4}
-	TILE_CAVE          = &Tile{Id: 'C', Cost: 4}
+	TILE_CONVEYOR_BELT = &Tile{Id: 'c', Cost: 0.5}
+	TILE_SAND          = &Tile{Id: 's', Cost: 2}
 
 	TILES = map[uint8]*Tile{
 		TILE_EMPTY.Id:         TILE_EMPTY,
 		TILE_WALL.Id:          TILE_WALL,
-		TILE_GOAL.Id:          TILE_GOAL,
 		TILE_CONVEYOR_BELT.Id: TILE_CONVEYOR_BELT,
+		TILE_SAND.Id:          TILE_SAND,
 	}
 )
 
@@ -83,16 +76,17 @@ func (w *World) GetTile(p Position) *Tile {
 }
 
 func (w *World) GetCost(p Position) (cost float64) {
+	// We don't use the TILES map because we get a nice speedup by using a switch
 	// Switch expressions ?
 	switch w.GetRaw(int(p.X), int(p.Y)) {
 	case TILE_EMPTY.Id:
 		cost = TILE_EMPTY.Cost
 	case TILE_WALL.Id:
 		cost = TILE_WALL.Cost
-	case TILE_GOAL.Id:
-		cost = TILE_GOAL.Cost
 	case TILE_CONVEYOR_BELT.Id:
 		cost = TILE_CONVEYOR_BELT.Cost
+	case TILE_SAND.Id:
+		cost = TILE_SAND.Cost
 	default:
 		panic("Unknown tile")
 	}
@@ -108,10 +102,10 @@ var offsets8 = []Position{
 var offsets4 = []Position{{X: 1}, {Y: 1}, {X: -1}, {Y: -1}}
 
 // GetNeighbors returns traversable tiles around position (x, y)
-// neighbors is an out param, presized to 8
-// This may probably be calculated ahead of time since the world won't change.
+// neighbors is an out param (with the right size), so we don't allocate repeatedly
+// This should probably be expanded ahead of time since the world won't change.
 func (w *World) GetNeighbors(p Position, diagonal bool, neighbors []Position) int {
-	// No functional programming, thanks Go
+	// If expressions ?
 	var offsets []Position
 	if diagonal {
 		offsets = offsets8
@@ -134,7 +128,7 @@ func NewWorldFromFile(name string) *World {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Schedule file close immediately
+	// That is actually a nice pattern
 	defer file.Close()
 
 	return NewWorld(file)
@@ -160,6 +154,7 @@ func NewWorld(r io.Reader) *World {
 		for j, char := range strings.TrimRight(scanner.Text(), "\t\n\r") {
 
 			// We only take the lowest part of the unicode codepoint for ascii
+			// The character is directly the tile id
 			id := uint8(char & 0x000000FF)
 
 			// Is end of map line ?
@@ -181,6 +176,8 @@ func NewWorld(r io.Reader) *World {
 	return &World{Width: width, Height: height, Inner: tab}
 }
 
+// NewWorldRandom
+// fill increases the quantity of walls
 func NewWorldRandom(width int, height int, fill float32, seed int64) *World {
 	rand := rand.New(rand.NewSource(seed))
 	inner := make([]uint8, width*height)
