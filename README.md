@@ -24,19 +24,23 @@ git push origin
 
 ## Build
 
-Sur Windows :
+### Windows
 
 ```shell
 > build.bat
+ou
+> go build -o target/elp-go.exe elp-go
 ```
 
-Sur Unix :
+### Linux
+
+Pour build le projet il est nécessaire d'installer certains paquets : https://gioui.org/doc/install/linux
 
 ```shell
 $ ./build.sh
+ou
+$ go build -o target/elp-go elp-go
 ```
-
-Exécutable : `target/elp-go`
 
 ## CLI
 
@@ -123,18 +127,45 @@ Pour A* (grande carte 10000) :
 
 On note aussi un coût non négligeable dû au boxing (interface{}) des ifaces.
 
-#### Pistes d'améliorations
+#### Pistes d'améliorations restantes
 
 1. Meilleure implémentation de priority queue (linked list O(n) -_-, impl pairing heap probablement foireuse). Meilleure
    gestion de la mémoire en sachant la taille du problème afin de limiter les allocs.
-2. Map optimisée Position -> Coût. Position = 2 entier 32 bits, Coût = float32. Il existe des impl de map bien mieux
-   qu'une hashmap pour ce genre de données.
-3. Utilisation d'un switch au lieu d'une map pour les tiles. Empeche d'avoir des tiles définies dynamiquement. Ou alors
-   stocker la définition de tile directement dans la carte, multiplie par 8 la taille de la carte mais enleve toute les
-   branches.
-4. Spécialisation des queues pour éviter le boxing. Casse l'architecture en package du projet.
-5. Précalcul des voisins pour éviter les allocs répétées au runtime. Pourrait quadrupler la taille en mémoire donc
+2. Précalcul des voisins pour éviter les allocs répétées au runtime. Pourrait quadrupler la taille en mémoire donc
    moyen.
+
+### Après profilage
+
+Baseline : d1190c07f745946dd36d8894e64562874ebf32f9 / Current :
+beb57836816e4b3c4c1f3f5db5ca1a40d8494636, [diff](https://github.com/Gui-Yom/elp-go/compare/db3e157000fe19cae93375a90cd94d139f487c3b...beb57836816e4b3c4c1f3f5db5ca1a40d8494636)
+
+CPU:
+
+| name               | old (µs/op) | new (µs/op) | delta   |
+|--------------------|-------------|-------------|---------|
+| DijkstraLinked100  | 7.94k ± 4%  | 5.39k ± 4%  | -32.12% |
+| DijkstraLinked1000 | 2.04M ± 0%  | 1.46M ± 1%  | -28.51% |
+| AstarLinked100     | 202 ± 5%    | 82 ±148%    | -59.30% |
+| AstarLinked1000    | 2.64k ± 9%  | 0.60k ± 1%  | -77.33% |
+| AstarLinked10000   | 22.5k ± 2%  | 6.7k ± 4%   | -70.08% |
+
+MEM:
+
+| name               | old (alloc/op) | new (alloc/op) | delta   |
+|--------------------|----------------|----------------|---------|
+| DijkstraLinked100  | 3.72MB ± 0%    | 1.19MB ± 0%    | -68.01% |
+| DijkstraLinked1000 | 329MB ± 0%     | 110MB ± 0%     | -66.46% |
+| AstarLinked100     | 122kB ± 1%     | 36kB ± 0%      | -70.43% |
+| AstarLinked1000    | 1.63MB ± 0%    | 0.46MB ± 0%    | -71.57% |
+| AstarLinked10000   | 14.2MB ± 0%    | 4.1MB ± 0%     | -70.85% |
+
+#### Modifications
+
+- Nouvelle impl HashMap Position -> Position et Position -> Coût (int64 -> int64)
+- Nouvelle impl linked list pour la priority queue
+- Utilisation d'un switch plutôt qu'une map pour le coût des tiles
+- Prédimensionnement de certaines structures dans les algos
+- Spécialisation des structures
 
 ## Détails
 
@@ -142,23 +173,26 @@ On note aussi un coût non négligeable dû au boxing (interface{}) des ifaces.
 
 - `main.go`: Point d'entrée partagé, parsing des arguments
 - `internal/`
-    - `agent.go`: Agents et tâches
+    - `agent.go`: Agents et résolution des tâches
     - `client.go`: Code relatif au client, gui
-    - `net.go`: Outils réseau
+    - `net.go`: Outils réseau et serialization
     - `scenario.go`: Scenario et tâches
     - `server.go`: Code relatif au serveur
+    - `fastmap/`:
+        - `fastmap.go`: HashMap rapide
     - `pathfinding/`
-        - `astar.go`: Implémentation de A*
-        - `dijkstra.go`: Implémentation de Dijkstra
-        - `heuristics.go`: Implémentations de différentes fonctions heuristiques pour A*
-        - `map.go`: Cartes et tiles
+        - `astar.go`: A*
+        - `dijkstra.go`: Dijkstra
+        - `heuristics.go`: fonctions heuristiques pour A*
         - `pathfinding.go`: Interfaces et utilités
     - `queue/`
-        - `queue.go`: Interface queue
+        - `queue.go`: Interface priority queue
         - `linked.go`: Queue basée sur une linked list
         - `pairing.go`: Queue basée sur un pairing heap
+    - `world/`
+        - `world.go`: Cartes et tiles
 
-Fichiers `*_test.go` : Code de test et benchmark
+Fichiers `*_test.go` : Code de test et benchmarks
 
 ### Dépendances
 
