@@ -134,6 +134,9 @@ On note aussi un coût non négligeable dû au boxing (interface{}) des ifaces.
 2. Précalcul des voisins pour éviter les allocs répétées au runtime. Pourrait quadrupler la taille en mémoire donc
    moyen.
 3. Les maps costs et parentChain pourraient être la même map (Position -> (Position, Coût)) pour économiser de la place
+4. Interface graphique améliorée
+5. Plus de tâches différentes
+6. Temps simulé: on prenne compte des chemins pour faire de l'attribution de tâches
 
 ### Après profilage
 
