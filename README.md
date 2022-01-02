@@ -240,7 +240,7 @@ Fastmap modifiée de : https://github.com/brentp/intintmap, impl originale (java
 - gérer les collisions ?
 
 ## Présentation
-- présentation générale + démo du programme -> Chaymae + Julie
+- présentation générale + démo du programme -> Chaymae 
 - serveur, client, goroutines, test goroutines -> Guillaume
 - recherche de chemins : djikstra et astar, heuristiques, test pathfinding -> Julie, Guillaume
 - pistes d'amélioration -> à voir
