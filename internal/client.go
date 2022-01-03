@@ -4,68 +4,16 @@ import (
 	"elp-go/internal/world"
 	"fmt"
 	"gioui.org/app"
-	"gioui.org/f32"
-	"gioui.org/io/pointer"
 	"gioui.org/io/system"
 	"gioui.org/unit"
 	"github.com/ajstarks/giocanvas"
 	"image"
 	"image/color"
 	"log"
+	"math"
 	"net"
-	"os"
-	"strconv"
 	"sync"
 )
-
-func mapFromArgs(args []string) *world.World {
-	parseError := func(value, name, type_ string) {
-		fmt.Printf("Can't parse %v '%v' as a valid %v", name, value, type_)
-		os.Exit(-1)
-	}
-
-	var carte *world.World
-	argsLen := len(args)
-	// Parsing des arguments de création de map
-	if argsLen == 0 || args[0] == "rand" {
-		var width int = 16
-		if argsLen >= 2 {
-			if num, err := strconv.ParseInt(args[1], 10, 32); err == nil {
-				width = int(num)
-			} else {
-				parseError(args[1], "width", "int")
-			}
-		}
-		var height int = 16
-		if argsLen >= 3 {
-			if num, err := strconv.ParseInt(args[2], 10, 32); err == nil {
-				height = int(num)
-			} else {
-				parseError(args[2], "height", "int")
-			}
-		}
-		var fill float32 = 0.2
-		if argsLen >= 4 {
-			if num, err := strconv.ParseFloat(args[3], 32); err == nil {
-				fill = float32(num)
-			} else {
-				parseError(args[3], "fill", "float")
-			}
-		}
-		var seed int64 = 42
-		if argsLen >= 5 {
-			if num, err := strconv.ParseInt(args[4], 10, 64); err == nil {
-				seed = num
-			} else {
-				parseError(args[4], "seed", "int")
-			}
-		}
-		carte = world.NewWorldRandom(width, height, fill, seed)
-	} else {
-		carte = world.NewWorldFromFile(args[0])
-	}
-	return carte
-}
 
 // StartClient Main func when running a client
 func StartClient(addr net.IP, port int, gui bool, connect bool, filename string) {
@@ -96,7 +44,9 @@ func StartClient(addr net.IP, port int, gui bool, connect bool, filename string)
 			if err := client.Recv(&result); err != nil {
 				log.Fatal(err)
 			}
-			fmt.Printf("result : %v", result)
+			fmt.Println("Got result !")
+			fmt.Println(result)
+			scenResult = &result
 		}()
 	}
 
@@ -107,6 +57,8 @@ func StartClient(addr net.IP, port int, gui bool, connect bool, filename string)
 	// This waits for the connect goroutine to unlock
 	wait.Lock()
 }
+
+var scenResult *ScenarioResult
 
 // showScenario Display the given scenario in a gui
 func showScenario(scen *Scenario) {
@@ -120,11 +72,13 @@ func showScenario(scen *Scenario) {
 	red := giocanvas.ColorLookup("red")
 	sand := color.NRGBA{R: 255, G: 203, B: 107, A: 255}
 	belt := color.NRGBA{R: 80, G: 96, B: 88, A: 255}
+	agentColor := giocanvas.ColorLookup("darkblue")
+	pathColor := giocanvas.ColorLookup("lime")
 
-	inputTag := new(bool)
+	//inputTag := new(bool)
 
 	size := image.Pt(720, 720)
-	var mousePos f32.Point
+	//var mousePos f32.Point
 
 	for e := range window.Events() {
 		switch e := e.(type) {
@@ -133,26 +87,29 @@ func showScenario(scen *Scenario) {
 			return
 		case system.FrameEvent:
 
+			// In case of a window resize
 			if size != e.Size {
 				size = e.Size
 				canvas = giocanvas.NewCanvas(float32(size.X), float32(size.Y), e)
 			}
 
 			// Process events that arrived between the last frame and this one.
-			for _, ev := range e.Queue.Events(inputTag) {
-				if x, ok := ev.(pointer.Event); ok {
-					switch x.Type {
-					case pointer.Move:
-						mousePos = x.Position
+			/*
+				for _, ev := range e.Queue.Events(inputTag) {
+					if x, ok := ev.(pointer.Event); ok {
+						switch x.Type {
+						case pointer.Move:
+							mousePos = x.Position
+						}
 					}
-				}
-			}
+				}*/
 
 			// Interested in pointer events
-			pointer.InputOp{
-				Tag:   inputTag,
-				Types: pointer.Move,
-			}.Add(canvas.Context.Ops)
+			/*
+				pointer.InputOp{
+					Tag:   inputTag,
+					Types: pointer.Move,
+				}.Add(canvas.Context.Ops)*/
 
 			canvas.Background(white)
 
@@ -160,7 +117,9 @@ func showScenario(scen *Scenario) {
 			tileHeigth := float32(size.Y) / float32(carte.Height)
 			for j := 0; j < carte.Height; j++ {
 				for i := 0; i < carte.Width; i++ {
-					switch carte.GetTile(world.Pos(i, j)) {
+					pos := world.Pos(i, j)
+					// Draw tiles
+					switch carte.GetTile(pos) {
 					case world.TILE_EMPTY:
 					case world.TILE_WALL:
 						canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, black)
@@ -171,9 +130,37 @@ func showScenario(scen *Scenario) {
 					default:
 						canvas.AbsRect(float32(i)*tileWidth, float32(j)*tileHeigth, tileWidth, tileHeigth, red)
 					}
+
+					// Draw agents starting positions
+					for _, agent := range scen.Agents {
+						if pos == agent {
+							canvas.AbsEllipse((float32(i)+0.5)*tileWidth, (float32(j)+0.5)*tileHeigth, tileWidth/2, tileHeigth/2, agentColor)
+						}
+					}
+
+					// Draw goals
+					for _, task := range scen.Tasks {
+						if pos == task.(MoveTask).Goal {
+							canvas.AbsCircle((float32(i)+0.5)*tileWidth, (float32(j)+0.5)*tileHeigth, float32(math.Min(float64(tileWidth), float64(tileHeigth)))/2, red)
+						}
+					}
 				}
 			}
-			canvas.AbsText(1, float32(size.Y-20), 13, fmt.Sprintf("N: %v, Diagonal: %v, mouse %v", scen.NumAgents, scen.DiagonalMovement, mousePos), black)
+
+			// Draw paths
+			if scenResult != nil {
+				for _, r := range scenResult.Completed {
+					for i, pos := range r.Path {
+						if i == 0 {
+							continue
+						}
+						canvas.AbsLine((float32(r.Path[i-1].X)+0.5)*tileWidth, (float32(r.Path[i-1].Y)+0.5)*tileHeigth, (float32(pos.X)+0.5)*tileWidth, (float32(pos.Y)+0.5)*tileHeigth, 1, pathColor)
+					}
+				}
+			}
+
+			// Debug text
+			//canvas.AbsText(1, float32(size.Y-20), 13, fmt.Sprintf("N: %v, Diagonal: %v, mouse %v", scen.Agents, scen.DiagonalMovement, mousePos), black)
 
 			// Update the display.
 			e.Frame(canvas.Context.Ops)

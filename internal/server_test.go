@@ -5,20 +5,8 @@ import (
 	"elp-go/internal/queue"
 	"elp-go/internal/world"
 	"fmt"
-	"math/rand"
 	"testing"
 )
-
-func genTasks(num int, w *world.World) []interface{} {
-	tasks := make([]interface{}, num)
-	for i := 0; i < len(tasks); i++ {
-		pos := world.Pos(rand.Intn(w.Width), rand.Intn(w.Height))
-		for ; !w.GetTile(pos).IsTraversable(); pos = world.Pos(rand.Intn(w.Width), rand.Intn(w.Height)) {
-		}
-		tasks[i] = MoveTask{Goal: pos}
-	}
-	return tasks
-}
 
 func testRequestHandler(t *testing.T, handler RequestHandler) {
 	w := world.NewWorldEmpty(100, 100)
@@ -26,7 +14,7 @@ func testRequestHandler(t *testing.T, handler RequestHandler) {
 		World:            w,
 		DiagonalMovement: true,
 		Tasks:            genTasks(8, w),
-		NumAgents:        4,
+		Agents:           make([]world.Position, 4),
 	}
 	result := handler(&scen, pathfinding.NewDijkstra(true, queue.NewLinked))
 	fmt.Printf("result : %v", result)
@@ -50,7 +38,7 @@ func benchmarkRequestHandler(b *testing.B, handler RequestHandler, numAgents int
 		World:            w,
 		DiagonalMovement: true,
 		Tasks:            genTasks(int(numTasks), w),
-		NumAgents:        numAgents,
+		Agents:           make([]world.Position, numAgents),
 	}
 	var accDuration float64
 	var accIterations float64

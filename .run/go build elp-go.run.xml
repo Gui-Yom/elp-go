@@ -3,7 +3,7 @@
     <module name="elp-go" />
     <working_directory value="$PROJECT_DIR$" />
     <go_parameters value="-o target/elp-go.exe" />
-    <parameters value="-noconnect map1.map" />
+    <parameters value="scenarios/scen1.json" />
     <kind value="PACKAGE" />
     <package value="elp-go" />
     <directory value="$PROJECT_DIR$" />

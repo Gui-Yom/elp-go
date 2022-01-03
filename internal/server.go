@@ -3,7 +3,6 @@ package internal
 import (
 	"elp-go/internal/pathfinding"
 	"elp-go/internal/queue"
-	"elp-go/internal/world"
 	"log"
 	"net"
 	"sync"
@@ -16,6 +15,7 @@ func StartServer(port int) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("Server started, listening on %v", server.Addr())
 	for {
 		// we accept the incoming connexions on the port
 		conn, err := server.AcceptTCP()
@@ -33,14 +33,17 @@ func StartServer(port int) {
 				var scenario Scenario
 				err = client.Recv(&scenario)
 				if err != nil {
-					log.Println(err)
-					//log.Fatal(err)
+					log.Printf("Client %v disconnected\n", client)
 					break
 				}
 				log.Printf("New scenario compute request from %v\n", client)
 				result := handleRequestPar(&scenario, pathfinding.NewAstar(true, pathfinding.EuclideanSq, queue.NewLinked))
-				//log.Printf("sending result : %v", result)
-				client.Send(result)
+				//log.Printf("Computed result : %v", result)
+				err := client.Send(result)
+				if err != nil {
+					log.Printf("Client %v disconnected\n", client)
+					break
+				}
 			}
 		}()
 	}
@@ -60,16 +63,16 @@ func handleRequestSeq(scen *Scenario, pathfinder pathfinding.Pathfinder) Scenari
 		close(taskQueue)
 	}()
 
-	agents := make([]Agent, scen.NumAgents)
-	for i := range agents {
-		agents[i] = NewAgent(uint(i), world.Pos(0, 0), pathfinder)
+	agents := make([]Agent, len(scen.Agents))
+	for i, pos := range scen.Agents {
+		agents[i] = NewAgent(uint(i), pos, pathfinder)
 	}
 
 	// Dispatch tasks to agent (round-robin)
 	index := 0
 	for task := range taskQueue {
-		//log.Printf("scheduling task %#v on agent %v", task, agents[index%int(scen.NumAgents)].Id)
-		result.Completed[index] = agents[index%int(scen.NumAgents)].ExecuteTask(scen.World, task)
+		//log.Printf("scheduling task %#v on agent %v", task, agents[index%int(scen.Agents)].Id)
+		result.Completed[index] = agents[index%len(agents)].ExecuteTask(scen.World, task)
 		index++
 	}
 	return result
@@ -85,14 +88,14 @@ func handleRequestPar(scen *Scenario, pathfinder pathfinding.Pathfinder) Scenari
 	// Task results, multi producers/single consumer
 	completed := make(chan CompletedTask, 10)
 
-	for i := 0; i < scen.NumAgents; i++ {
+	for i := 0; i < len(scen.Agents); i++ {
 		i := i // Apparently : Loop variables captured by 'func' literals in 'go' statements might have unexpected values
 		go func() {
 			agentWg.Add(1)
 			// Release the lock
 			defer agentWg.Done()
 
-			agent := NewAgent(uint(i), world.Pos(0, 0), pathfinder)
+			agent := NewAgent(uint(i), scen.Agents[i], pathfinder)
 			for t := range tasks {
 				//log.Printf("scheduling task %#v on agent %v", t, agent.Id)
 				completed <- agent.ExecuteTask(scen.World, t)

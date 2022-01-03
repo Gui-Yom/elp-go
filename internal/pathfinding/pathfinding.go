@@ -4,7 +4,6 @@ import (
 	"elp-go/internal/fastmap"
 	"elp-go/internal/queue"
 	"elp-go/internal/world"
-	"fmt"
 	"time"
 )
 
@@ -31,9 +30,10 @@ type Stats struct {
 	PresizeAccuracy float64
 }
 
+/*
 func (s Stats) String() string {
 	return fmt.Sprintf("Stats{Iterations: %v, Duration: %v µs, Cost: %v}", s.Iterations, s.Duration.Microseconds(), s.Cost)
-}
+}*/
 
 // makePath creates a path (position slice) from a parent chain and the 2 path ends
 func makePath(parentChain *fastmap.Map, start world.Position, goal world.Position) []world.Position {
