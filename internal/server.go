@@ -37,7 +37,7 @@ func StartServer(port int) {
 					break
 				}
 				log.Printf("New scenario compute request from %v\n", client)
-				result := handleRequestPar(&scenario, pathfinding.NewAstar(true, pathfinding.EuclideanSq, queue.NewLinked))
+				result := handleRequestPar(&scenario, pathfinding.NewAstar(true, pathfinding.Chebyshev, queue.NewLinked))
 				//log.Printf("Computed result : %v", result)
 				err := client.Send(result)
 				if err != nil {

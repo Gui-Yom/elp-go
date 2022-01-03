@@ -24,3 +24,10 @@ func EuclideanSq(p world.Position, goal world.Position) float64 {
 	dy := math.Abs(float64(p.Y - goal.Y))
 	return dx*dx + dy*dy
 }
+
+// Chebyshev Optimal heuristic when using an 8-neighborhood.
+func Chebyshev(p world.Position, goal world.Position) float64 {
+	dx := float64(p.X - goal.X)
+	dy := float64(p.Y - goal.Y)
+	return dx + dy - math.Min(dx, dy)
+}
