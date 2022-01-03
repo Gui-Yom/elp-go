@@ -61,12 +61,6 @@ Usage : elp-go [-args] [scenario file]
 Example usage :
   Start a server :
     $ elp-go -server
-<<<<<<< HEAD
-  Start a client with a map file :
-    $ elp-go map.map
-  Start a client with a randomly generated map :
-    $ elp-go rand 100 100 0.1 42
-=======
   Start a client with a scenario file :
     $ elp-go scenarios/scen0.scen
   Start a client with a random scenario :
@@ -281,6 +275,8 @@ Serveur (pour chaque client) :
 - Retour à l'étape 1
 
 ## Références
+
+https://www.redblobgames.com/ de Amit Patel, http://www-cs-students.stanford.edu/~amitp/
 
 https://doi.org/10.1137/1.9781611973198.7
 
