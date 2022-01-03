@@ -15,6 +15,7 @@ func StartServer(port int) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("Server started, listening on %v", server.Addr())
 	for {
 		// we accept the incoming connexions on the port
 		conn, err := server.AcceptTCP()
@@ -32,14 +33,17 @@ func StartServer(port int) {
 				var scenario Scenario
 				err = client.Recv(&scenario)
 				if err != nil {
-					log.Println(err)
-					//log.Fatal(err)
+					log.Printf("Client %v disconnected\n", client)
 					break
 				}
 				log.Printf("New scenario compute request from %v\n", client)
 				result := handleRequestPar(&scenario, pathfinding.NewAstar(true, pathfinding.EuclideanSq, queue.NewLinked))
-				//log.Printf("sending result : %v", result)
-				client.Send(result)
+				//log.Printf("Computed result : %v", result)
+				err := client.Send(result)
+				if err != nil {
+					log.Printf("Client %v disconnected\n", client)
+					break
+				}
 			}
 		}()
 	}

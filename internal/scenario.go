@@ -139,7 +139,7 @@ type ScenarioResult struct {
 func (res ScenarioResult) String() string {
 	s := "ScenarioResult\n  Tasks:\n"
 	for _, t := range res.Completed {
-		s = fmt.Sprintf("%s    %v -> %v\n", s, t.AgentId, t.Path)
+		s = fmt.Sprintf("%s    %v -> %v (%v)\n", s, t.AgentId, t.Path, t.Stats)
 	}
 	return s
 }
