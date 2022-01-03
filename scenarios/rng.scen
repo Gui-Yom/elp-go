@@ -1,8 +1,0 @@
-map rand 100 100 0.2 42
-diagonal true
-agents 4
-0 0
-0 0
-0 0
-0 0
-tasks 128 rand

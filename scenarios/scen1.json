@@ -1,0 +1,15 @@
+{
+  "map": "map1.map",
+  "diagonal": false,
+  "tasks": [
+    {
+      "x": 0,
+      "y": 19
+    },
+    {
+      "x": 18,
+      "y": 0
+    }
+  ],
+  "agents": 1
+}

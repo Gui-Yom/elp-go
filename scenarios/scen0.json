@@ -1,0 +1,16 @@
+{
+  "map": "map0.map",
+  "diagonal": false,
+  "tasks": [
+    {
+      "x": 9,
+      "y": 9
+    }
+  ],
+  "agents": [
+    {
+      "x": 0,
+      "y": 0
+    }
+  ]
+}

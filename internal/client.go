@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gioui.org/app"
 	"gioui.org/f32"
-	"gioui.org/io/pointer"
 	"gioui.org/io/system"
 	"gioui.org/unit"
 	"github.com/ajstarks/giocanvas"
@@ -13,59 +12,8 @@ import (
 	"image/color"
 	"log"
 	"net"
-	"os"
-	"strconv"
 	"sync"
 )
-
-func mapFromArgs(args []string) *world.World {
-	parseError := func(value, name, type_ string) {
-		fmt.Printf("Can't parse %v '%v' as a valid %v", name, value, type_)
-		os.Exit(-1)
-	}
-
-	var carte *world.World
-	argsLen := len(args)
-	// Parsing des arguments de création de map
-	if argsLen == 0 || args[0] == "rand" {
-		var width int = 16
-		if argsLen >= 2 {
-			if num, err := strconv.ParseInt(args[1], 10, 32); err == nil {
-				width = int(num)
-			} else {
-				parseError(args[1], "width", "int")
-			}
-		}
-		var height int = 16
-		if argsLen >= 3 {
-			if num, err := strconv.ParseInt(args[2], 10, 32); err == nil {
-				height = int(num)
-			} else {
-				parseError(args[2], "height", "int")
-			}
-		}
-		var fill float32 = 0.2
-		if argsLen >= 4 {
-			if num, err := strconv.ParseFloat(args[3], 32); err == nil {
-				fill = float32(num)
-			} else {
-				parseError(args[3], "fill", "float")
-			}
-		}
-		var seed int64 = 42
-		if argsLen >= 5 {
-			if num, err := strconv.ParseInt(args[4], 10, 64); err == nil {
-				seed = num
-			} else {
-				parseError(args[4], "seed", "int")
-			}
-		}
-		carte = world.NewWorldRandom(width, height, fill, seed)
-	} else {
-		carte = world.NewWorldFromFile(args[0])
-	}
-	return carte
-}
 
 // StartClient Main func when running a client
 func StartClient(addr net.IP, port int, gui bool, connect bool, filename string) {
@@ -121,7 +69,7 @@ func showScenario(scen *Scenario) {
 	sand := color.NRGBA{R: 255, G: 203, B: 107, A: 255}
 	belt := color.NRGBA{R: 80, G: 96, B: 88, A: 255}
 
-	inputTag := new(bool)
+	//inputTag := new(bool)
 
 	size := image.Pt(720, 720)
 	var mousePos f32.Point
@@ -139,20 +87,22 @@ func showScenario(scen *Scenario) {
 			}
 
 			// Process events that arrived between the last frame and this one.
-			for _, ev := range e.Queue.Events(inputTag) {
-				if x, ok := ev.(pointer.Event); ok {
-					switch x.Type {
-					case pointer.Move:
-						mousePos = x.Position
+			/*
+				for _, ev := range e.Queue.Events(inputTag) {
+					if x, ok := ev.(pointer.Event); ok {
+						switch x.Type {
+						case pointer.Move:
+							mousePos = x.Position
+						}
 					}
-				}
-			}
+				}*/
 
 			// Interested in pointer events
-			pointer.InputOp{
-				Tag:   inputTag,
-				Types: pointer.Move,
-			}.Add(canvas.Context.Ops)
+			/*
+				pointer.InputOp{
+					Tag:   inputTag,
+					Types: pointer.Move,
+				}.Add(canvas.Context.Ops)*/
 
 			canvas.Background(white)
 
@@ -173,7 +123,7 @@ func showScenario(scen *Scenario) {
 					}
 				}
 			}
-			canvas.AbsText(1, float32(size.Y-20), 13, fmt.Sprintf("N: %v, Diagonal: %v, mouse %v", scen.NumAgents, scen.DiagonalMovement, mousePos), black)
+			canvas.AbsText(1, float32(size.Y-20), 13, fmt.Sprintf("N: %v, Diagonal: %v, mouse %v", scen.Agents, scen.DiagonalMovement, mousePos), black)
 
 			// Update the display.
 			e.Frame(canvas.Context.Ops)
