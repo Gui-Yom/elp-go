@@ -63,6 +63,8 @@ Example usage :
     $ elp-go -server
   Start a client with a map file :
     $ elp-go map.map
+  Start a client with a scen file :
+    $ elp-go scen0.scen
   Start a client with a randomly generated map :
     $ elp-go rand 100 100 0.1 42
 ```
