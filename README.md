@@ -42,12 +42,12 @@ ou
 $ go build -o target/elp-go elp-go
 ```
 
-## CLI
+## Usage
 
 `$ elp-go -h`
 
 ```
-Usage : elp-go [-args] [map file | rand] [width] [height] [fill] [seed]
+Usage : elp-go [-args] [scenario file]  
   -addr value
         Host to connect to.
   -noconnect
@@ -61,10 +61,58 @@ Usage : elp-go [-args] [map file | rand] [width] [height] [fill] [seed]
 Example usage :
   Start a server :
     $ elp-go -server
-  Start a client with a map file :
-    $ elp-go map.map
-  Start a client with a randomly generated map :
-    $ elp-go rand 100 100 0.1 42
+  Start a client with a scenario file :
+    $ elp-go scenarios/scen0.scen
+  Start a client with a random scenario :
+    $ elp-go scenarios/rng.scen
+```
+
+### Fichier scénario
+
+```json
+{
+  "map": "map0.map",
+  "diagonal": false,
+  "tasks": [
+    {
+      "x": 9,
+      "y": 9
+    }
+  ],
+  "agents": [
+    {
+      "x": 0,
+      "y": 0
+    }
+  ]
+}
+```
+
+Il est aussi possible de générer des scénarios de manière aléatoire :
+
+```json
+{
+  "map": "rand 100 100 0.2 42",
+  "diagonal": true,
+  "tasks": 128,
+  "agents": 4
+}
+```
+
+### Fichiers map
+
+```text
+10x10
+         x|
+xxxxx   x |
+       x  |
+x xxxxx   |
+          |
+          |
+          |
+          |
+          |
+          |
 ```
 
 ## Tests
@@ -232,7 +280,8 @@ https://doi.org/10.1137/1.9781611973198.7
 Fastmap modifiée de : https://github.com/brentp/intintmap, impl originale (java) : https://github.com/mikvor/hashmapTest
 
 ## Présentation
-- présentation générale + démo du programme -> Chaymae 
+
+- présentation générale + démo du programme -> Chaymae
 - serveur, client, goroutines, test goroutines -> Guillaume
 - recherche de chemins : djikstra et astar, heuristiques, test pathfinding -> Julie, Guillaume
 - pistes d'amélioration -> à voir
