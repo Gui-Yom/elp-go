@@ -78,6 +78,26 @@ func New(size int, fillFactor float64) *Map {
 	}
 }
 
+func (m *Map) GetCost(key world.Position) (float64, bool) {
+	key_ := int64(key.X)<<32 | int64(key.Y)
+	if val, ok := m.get(key_); ok {
+		return *(*float64)(unsafe.Pointer(&val)), true
+	} else {
+		return 0, false
+	}
+}
+
+func (m *Map) GetPos(key world.Position) (world.Position, bool) {
+	key_ := int64(key.X)<<32 | int64(key.Y)
+	if val, ok := m.get(key_); ok {
+		X := int32(val >> 32)        // High 32bits
+		Y := int32(val & 0xFFFFFFFF) // Low 32bits
+		return world.Position{X: X, Y: Y}, true
+	} else {
+		return world.Position{}, false
+	}
+}
+
 // Get returns the value if the key is found.
 func (m *Map) get(key int64) (int64, bool) {
 	if key == freeKey {
@@ -112,24 +132,15 @@ func (m *Map) get(key int64) (int64, bool) {
 	}
 }
 
-func (m *Map) GetCost(key world.Position) (float64, bool) {
+func (m *Map) PutCost(key world.Position, cost float64) {
 	key_ := int64(key.X)<<32 | int64(key.Y)
-	if val, ok := m.get(key_); ok {
-		return *(*float64)(unsafe.Pointer(&val)), true
-	} else {
-		return 0, false
-	}
+	m.put(key_, *(*int64)(unsafe.Pointer(&cost)))
 }
 
-func (m *Map) GetPos(key world.Position) (world.Position, bool) {
+func (m *Map) PutPos(key world.Position, pos world.Position) {
 	key_ := int64(key.X)<<32 | int64(key.Y)
-	if val, ok := m.get(key_); ok {
-		X := int32(val >> 32)        // High 32bits
-		Y := int32(val & 0xFFFFFFFF) // Low 32bits
-		return world.Position{X: X, Y: Y}, true
-	} else {
-		return world.Position{}, false
-	}
+	val_ := int64(pos.X)<<32 | int64(pos.Y)
+	m.put(key_, val_)
 }
 
 // Put adds or updates key with value val.
@@ -177,51 +188,6 @@ func (m *Map) put(key int64, val int64) {
 			m.data[ptr+1] = val
 			return
 		}
-	}
-}
-
-func (m *Map) PutCost(key world.Position, cost float64) {
-	key_ := int64(key.X)<<32 | int64(key.Y)
-	m.put(key_, *(*int64)(unsafe.Pointer(&cost)))
-}
-
-func (m *Map) PutPos(key world.Position, pos world.Position) {
-	key_ := int64(key.X)<<32 | int64(key.Y)
-	val_ := int64(pos.X)<<32 | int64(pos.Y)
-	m.put(key_, val_)
-}
-
-// Del deletes a key and its value.
-func (m *Map) Del(key int64) {
-	if key == freeKey {
-		m.hasFreeKey = false
-		m.size--
-		return
-	}
-
-	ptr := (phiMix(key) & m.mask) << 1
-	k := m.data[ptr]
-
-	if k == key {
-		m.shiftKeys(ptr)
-		m.size--
-		return
-	} else if k == freeKey { // end of chain already
-		return
-	}
-
-	for {
-		ptr = (ptr + 2) & m.mask2
-		k = m.data[ptr]
-
-		if k == key {
-			m.shiftKeys(ptr)
-			m.size--
-			return
-		} else if k == freeKey {
-			return
-		}
-
 	}
 }
 
@@ -285,50 +251,4 @@ func (m *Map) rehash() {
 // Size returns size of the map.
 func (m *Map) Size() int {
 	return m.size
-}
-
-// Keys returns a channel for iterating all keys.
-func (m *Map) Keys() chan int64 {
-	c := make(chan int64, 10)
-	go func() {
-		data := m.data
-		var k int64
-
-		if m.hasFreeKey {
-			c <- freeKey // value is m.freeVal
-		}
-
-		for i := 0; i < len(data); i += 2 {
-			k = data[i]
-			if k == freeKey {
-				continue
-			}
-			c <- k // value is data[i+1]
-		}
-		close(c)
-	}()
-	return c
-}
-
-// Items returns a channel for iterating all key-value pairs.
-func (m *Map) Items() chan [2]int64 {
-	c := make(chan [2]int64, 10)
-	go func() {
-		data := m.data
-		var k int64
-
-		if m.hasFreeKey {
-			c <- [2]int64{freeKey, m.freeVal}
-		}
-
-		for i := 0; i < len(data); i += 2 {
-			k = data[i]
-			if k == freeKey {
-				continue
-			}
-			c <- [2]int64{k, data[i+1]}
-		}
-		close(c)
-	}()
-	return c
 }

@@ -75,7 +75,7 @@ func mapFromArgs(basedir string, args []string) *world.World {
 	argsLen := len(args)
 	// Parsing des arguments de création de map
 	if argsLen == 0 || args[0] == "rand" {
-		var width int = 16
+		var width = 16
 		if argsLen >= 2 {
 			if num, err := strconv.ParseInt(args[1], 10, 32); err == nil {
 				width = int(num)
@@ -83,7 +83,7 @@ func mapFromArgs(basedir string, args []string) *world.World {
 				parseError(args[1], "width", "int")
 			}
 		}
-		var height int = 16
+		var height = 16
 		if argsLen >= 3 {
 			if num, err := strconv.ParseInt(args[2], 10, 32); err == nil {
 				height = int(num)
